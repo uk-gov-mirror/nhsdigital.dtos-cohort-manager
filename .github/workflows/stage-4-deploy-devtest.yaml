@@ -100,7 +100,7 @@ jobs:
 
           # Define which tests to run based on the environment
           declare -A test_types=(
-            ["development"]="smoke_e2e"
+            ["nft"]="smoke_e2e"
           )
           TEST_TYPES_VALUE="${test_types[${ENVIRONMENT_NAME}]}"
 

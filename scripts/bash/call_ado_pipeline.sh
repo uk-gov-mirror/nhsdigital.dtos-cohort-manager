@@ -21,21 +21,20 @@ if [[ -n "${BRANCH_NAME}" ]]; then
   RUN_ID=$(az pipelines run \
     --branch "${BRANCH_NAME}" \
     --commit-id "${COMMIT_SHA}" \
-    --name "Deploy to Azure - Core ${ENVIRONMENT_NAME}" \
+    --name "Deploy to Azure - Unified" \
     --org "${organisation}" \
     --project "${project_name}" \
-    --parameters "$param_image" "$param_tests" \
+    --parameters targetEnvironment="${ENVIRONMENT_NAME}" $param_image $param_tests \
     --output tsv --query id)
 else
   RUN_ID=$(az pipelines run \
     --commit-id "${COMMIT_SHA}" \
-    --name "Deploy to Azure - Core ${ENVIRONMENT_NAME}" \
+    --name "Deploy to Azure - Unified" \
     --org "${organisation}" \
     --project "${project_name}" \
-    --parameters "$param_image" "$param_tests" \
+    --parameters targetEnvironment="${ENVIRONMENT_NAME}" $param_image $param_tests \
     --output tsv --query id)
 fi
-
 echo "Click here to view the ADO pipeline: ${organisation}/${project_name}/_build/results?buildId=${RUN_ID}"
 
 scripts/bash/wait_ado_pipeline.sh "$RUN_ID" "${organisation}" "${project_name}" 1800

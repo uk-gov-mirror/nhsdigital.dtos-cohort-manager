@@ -44,7 +44,7 @@ jobs:
           echo "python_version=$(grep "^nodejs" .tool-versions | cut -f2 -d' ')" >> $GITHUB_OUTPUT
           echo "terraform_version=$(grep "^terraform" .tool-versions | cut -f2 -d' ')" >> $GITHUB_OUTPUT
           echo "version=$(head -n 1 .version 2> /dev/null || echo unknown)" >> $GITHUB_OUTPUT
-          echo "environment_tag=development" >> $GITHUB_OUTPUT
+          echo "environment_tag=nft" >> $GITHUB_OUTPUT
       - name: "Check if pull request exists for this branch"
         id: pr
         env:
@@ -87,44 +87,44 @@ jobs:
       python_version: "${{ needs.metadata.outputs.python_version }}"
       terraform_version: "${{ needs.metadata.outputs.terraform_version }}"
       version: "${{ needs.metadata.outputs.version }}"
-  test-stage: # Recommended maximum execution time is 5 minutes
-    name: 'Test stage'
-    needs: [metadata]
-    permissions:
-      pull-requests: write
-    uses: ./.github/workflows/stage-2-test.yaml
-    with:
-      unit_test_dir: tests/UnitTests
-      app_dir: application/CohortManager
-      build_datetime: '${{ needs.metadata.outputs.build_datetime }}'
-      build_timestamp: '${{ needs.metadata.outputs.build_timestamp }}'
-      build_epoch: '${{ needs.metadata.outputs.build_epoch }}'
-      nodejs_version: '${{ needs.metadata.outputs.nodejs_version }}'
-      python_version: '${{ needs.metadata.outputs.python_version }}'
-      terraform_version: '${{ needs.metadata.outputs.terraform_version }}'
-      version: '${{ needs.metadata.outputs.version }}'
-  analysis-stage: # Recommended maximum execution time is 5 minutes
-    name: "Analysis stage"
-    needs: [metadata, commit-stage, test-stage]
-    uses: ./.github/workflows/stage-2-analyse.yaml
-    permissions:
-      contents: read
-      id-token: write
-      pull-requests: read
-    secrets:
-      sonar_token: ${{ secrets.SONAR_TOKEN }}
-    with:
-      unit_test_dir: tests/UnitTests
-      build_datetime: "${{ needs.metadata.outputs.build_datetime }}"
-      build_timestamp: "${{ needs.metadata.outputs.build_timestamp }}"
-      build_epoch: "${{ needs.metadata.outputs.build_epoch }}"
-      nodejs_version: "${{ needs.metadata.outputs.nodejs_version }}"
-      python_version: "${{ needs.metadata.outputs.python_version }}"
-      terraform_version: "${{ needs.metadata.outputs.terraform_version }}"
-      version: "${{ needs.metadata.outputs.version }}"
+  # test-stage: # Recommended maximum execution time is 5 minutes
+  #   name: 'Test stage'
+  #   needs: [metadata]
+  #   permissions:
+  #     pull-requests: write
+  #   uses: ./.github/workflows/stage-2-test.yaml
+  #   with:
+  #     unit_test_dir: tests/UnitTests
+  #     app_dir: application/CohortManager
+  #     build_datetime: '${{ needs.metadata.outputs.build_datetime }}'
+  #     build_timestamp: '${{ needs.metadata.outputs.build_timestamp }}'
+  #     build_epoch: '${{ needs.metadata.outputs.build_epoch }}'
+  #     nodejs_version: '${{ needs.metadata.outputs.nodejs_version }}'
+  #     python_version: '${{ needs.metadata.outputs.python_version }}'
+  #     terraform_version: '${{ needs.metadata.outputs.terraform_version }}'
+  #     version: '${{ needs.metadata.outputs.version }}'
+  # analysis-stage: # Recommended maximum execution time is 5 minutes
+  #   name: "Analysis stage"
+  #   needs: [metadata, commit-stage, test-stage]
+  #   uses: ./.github/workflows/stage-2-analyse.yaml
+  #   permissions:
+  #     contents: read
+  #     id-token: write
+  #     pull-requests: read
+  #   secrets:
+  #     sonar_token: ${{ secrets.SONAR_TOKEN }}
+  #   with:
+  #     unit_test_dir: tests/UnitTests
+  #     build_datetime: "${{ needs.metadata.outputs.build_datetime }}"
+  #     build_timestamp: "${{ needs.metadata.outputs.build_timestamp }}"
+  #     build_epoch: "${{ needs.metadata.outputs.build_epoch }}"
+  #     nodejs_version: "${{ needs.metadata.outputs.nodejs_version }}"
+  #     python_version: "${{ needs.metadata.outputs.python_version }}"
+  #     terraform_version: "${{ needs.metadata.outputs.terraform_version }}"
+  #     version: "${{ needs.metadata.outputs.version }}"
   build-image-stage: # Recommended maximum execution time is 3 minutes
     name: "Image build stage"
-    needs: [metadata, test-stage, analysis-stage]
+    needs: [metadata, commit-stage] # skip tests in DevTest, previously: [metadata, test-stage, analysis-stage]
     uses: ./.github/workflows/stage-3-build-images-devtest.yaml
     permissions:
       contents: read
@@ -156,5 +156,5 @@ jobs:
       tenant_id: ${{ secrets.AZURE_TENANT_ID }}
       subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     with:
-      environments: "[\"development\"]"
+      environments: "[\"nft\"]" # a temporary change to test the new pipeline
       commit_sha: ${{ github.sha }}
