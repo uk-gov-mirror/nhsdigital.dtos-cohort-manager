@@ -20,6 +20,7 @@ module "storage" {
 
   blob_properties_delete_retention_policy = each.value.blob_properties_delete_retention_policy
   blob_properties_versioning_enabled      = each.value.blob_properties_versioning_enabled
+  blob_properties_change_feed_enabled     = each.value.blob_properties_change_feed_enabled
 
   public_network_access_enabled = each.value.public_network_access_enabled
 
@@ -57,7 +58,22 @@ locals {
         access_tier                             = storage_val.access_tier
         blob_properties_delete_retention_policy = storage_val.blob_properties_delete_retention_policy
         blob_properties_versioning_enabled      = storage_val.blob_properties_versioning_enabled
-        containers                              = storage_val.containers
+        blob_properties_change_feed_enabled     = storage_val.blob_properties_change_feed_enabled
+        containers = {
+          for key, c in storage_val.containers :
+          key => {
+            container_name        = c.container_name
+            container_access_type = c.container_access_type
+
+            object_replication = (
+              c.object_replication == null ? null : {
+                source_container_name          = c.container_name
+                destination_storage_account_id = data.terraform_remote_state.audit.outputs.storage_account_audit["sqlbackups-${local.primary_region}"].id
+                destination_container_name     = c.object_replication.audit_container_name
+              }
+            )
+          }
+        }
       }
     ]
   ])

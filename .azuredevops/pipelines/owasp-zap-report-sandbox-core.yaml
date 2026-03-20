@@ -24,5 +24,5 @@ stages:
       hostPoolName: $(hostPoolName)
       environment: $(ENVIRONMENT)
       slackWebHook: $(SLACK_WEBHOOK_URL_WORKFLOWS)
-      apiUrl: 'https://sbrk-uks-retrieve-cohort-distribution-data.azurewebsites.net/api/RetrieveCohortDistributionData'
+      apiUrl: 'https://sb-uks-retrieve-cohort-distribution-data.azurewebsites.net/api/RetrieveCohortDistributionData'
       webUrl: 'https://cohort-dev.non-live.screening.nhs.uk'

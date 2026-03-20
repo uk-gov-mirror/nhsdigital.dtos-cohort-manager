@@ -647,12 +647,17 @@ variable "storage_accounts" {
     account_tier                            = optional(string, "Standard")
     blob_properties_delete_retention_policy = optional(number, 7)
     blob_properties_versioning_enabled      = optional(bool, false)
+    blob_properties_change_feed_enabled     = optional(bool, false)
     replication_type                        = optional(string, "LRS")
     public_network_access_enabled           = optional(bool, false)
     access_tier                             = optional(string, "Hot")
     containers = optional(map(object({
       container_name        = string
       container_access_type = optional(string, "private")
+      object_replication = optional(object({
+        audit_storage_account_name = string
+        audit_container_name       = string
+      }))
     })), {})
   }))
 }

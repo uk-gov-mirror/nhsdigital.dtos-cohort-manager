@@ -17,7 +17,7 @@ parameters:
     # Used to set the Docker image tag via Terraform in the Continuous Deployment settings of function and container apps
     displayName: 'Docker Image Tag'
     type: string
-    default: sbrk
+    default: sb
 
   - name: retagImages
     # Only required until commit hashes are passed in by calling pipeline, except for the
@@ -36,7 +36,7 @@ parameters:
     # Only required until commit hashes are passed in by calling pipeline
     displayName: 'Docker Image Retag to value'
     type: string
-    default: sbrk
+    default: sb
 
   - name: terraformActions
     # This parameter allows the user to run only the plan for testing purposes

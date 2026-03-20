@@ -1,6 +1,6 @@
 application           = "cohman"
 application_full_name = "cohort-manager"
-environment           = "SBRK"
+environment           = "SB"
 
 features = {
   acr_enabled                          = false
@@ -10,8 +10,8 @@ features = {
   private_service_connection_is_manual = false
   public_network_access_enabled        = false
   frontdoor_endpoint_enabled           = false
-  alerts_enabled                       = true
-  alerts_function_errors_enabled       = true
+  alerts_enabled                       = false
+  alerts_function_errors_enabled       = false
 }
 
 # these will be merged with compliance tags in locals.tf
@@ -1255,14 +1255,14 @@ frontdoor_endpoint = {
     }
     # custom_domains = {
     #   cohort-dev = {
-    #     host_name        = "cohort-sbrk.non-live.screening.nhs.uk"
+    #     host_name        = "cohort-sb.non-live.screening.nhs.uk"
     #     dns_zone_name    = "non-live.screening.nhs.uk"
     #     dns_zone_rg_name = "rg-hub-dev-uks-public-dns-zones"
     #   }
     # }
     # security_policies = {
     #   AllowedIPs = {
-    #     cdn_frontdoor_firewall_policy_name    = "wafhubnonlivecohmansbrk"
+    #     cdn_frontdoor_firewall_policy_name    = "wafhubnonlivecohmansb"
     #     cdn_frontdoor_firewall_policy_rg_name = "rg-hub-dev-uks-hub-networking"
     #     associated_domain_keys                = ["cohort-dev"] # From custom_domains above. Use "endpoint" for the default domain (if linked in Front Door route).
     #   }
@@ -1304,7 +1304,7 @@ service_bus = {
 }
 
 sqlserver = {
-  sql_admin_group_name                 = "sqlsvr_cohman_sbrk_uks_admin"
+  sql_admin_group_name                 = "sqlsvr_cohman_sb_uks_admin"
   ad_auth_only                         = true
   auditing_policy_retention_in_days    = 30
   security_alert_policy_retention_days = 30
@@ -1351,7 +1351,8 @@ storage_accounts = {
     replication_type                        = "LRS"
     public_network_access_enabled           = false
     blob_properties_delete_retention_policy = 7
-    blob_properties_versioning_enabled      = false
+    blob_properties_versioning_enabled      = true
+    blob_properties_change_feed_enabled     = true
     containers = {
       file-exceptions = {
         container_name        = "file-exceptions"
@@ -1362,6 +1363,10 @@ storage_accounts = {
       }
       inbound = {
         container_name = "inbound"
+        object_replication = {
+          audit_storage_account_name = "inbound-caas"
+          audit_container_name       = "inbound-caas-immutable"
+        }
       }
       inbound-poison = {
         container_name = "inbound-poison"
