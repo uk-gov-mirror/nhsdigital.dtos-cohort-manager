@@ -28,7 +28,6 @@ module "functionapp" {
 
   # Use the storage account assigned identity for the Function Apps:
   storage_account_name          = module.storage["fnapp-${each.value.region}"].storage_account_name
-  storage_account_access_key    = var.function_apps.storage_uses_managed_identity == true ? null : module.storage["fnapp-${each.value.region}"].storage_account_primary_access_key
   storage_uses_managed_identity = var.function_apps.storage_uses_managed_identity
 
   # Connection string for Application Insights:
@@ -154,15 +153,16 @@ locals {
             } : {},
 
             # Storage - The C# code should be updated to use System Managed Identity, rather than connection string
-            length(config.storage_account_env_var_name) > 0 ? merge(
-              {
-                (config.storage_account_env_var_name) = module.storage["file_exceptions-${region}"].storage_account_primary_connection_string
-              },
-              var.features.private_endpoints_enabled ? {
-                "${config.storage_account_env_var_name}__blobServiceUri"  = "https://${module.storage["file_exceptions-${region}"].storage_account_name}.blob.core.windows.net"
-                "${config.storage_account_env_var_name}__queueServiceUri" = "https://${module.storage["file_exceptions-${region}"].storage_account_name}.queue.core.windows.net"
-              } : {}
-            ) : {},
+            {
+              "AzureWebJobsStorage__accountName"     = module.storage["fnapp-${region}"].storage_account_name
+              "AzureWebJobsStorage__blobServiceUri"  = "https://${module.storage["fnapp-${region}"].storage_account_name}.blob.core.windows.net"
+              "AzureWebJobsStorage__queueServiceUri" = "https://${module.storage["fnapp-${region}"].storage_account_name}.queue.core.windows.net"
+            },
+            length(config.storage_account_env_var_name) > 0 && var.features.private_endpoints_enabled ? {
+              "${config.storage_account_env_var_name}__accountName"     = module.storage["file_exceptions-${region}"].storage_account_name
+              "${config.storage_account_env_var_name}__blobServiceUri"  = "https://${module.storage["file_exceptions-${region}"].storage_account_name}.blob.core.windows.net"
+              "${config.storage_account_env_var_name}__queueServiceUri" = "https://${module.storage["file_exceptions-${region}"].storage_account_name}.queue.core.windows.net"
+            } : {},
 
             length(config.storage_containers) > 0 ? {
               for k, v in config.storage_containers :

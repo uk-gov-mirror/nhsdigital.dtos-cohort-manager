@@ -106,7 +106,18 @@ public class ReceiveCaasFile
         {
             _logger.LogError(ex, "There was a system exception in receive-caas-file");
             await _exceptionHandler.CreateSystemExceptionLogFromNhsNumber(ex, "", name, screeningName, "");
-            await _blobStorageHelper.CopyFileToPoisonAsync(_config.caasfolder_STORAGE, name, _config.inboundBlobName);
+            if (_config.caasfolder_STORAGE != null)
+            {
+                await _blobStorageHelper.CopyFileToPoisonAsync(new Uri(_config.caasfolder_STORAGE.BlobServiceUri), name, _config.inboundBlobName);
+            }
+            else
+            {
+                var connectionString = Environment.GetEnvironmentVariable("caasfolder_STORAGE");
+                if (connectionString != null)
+                {
+                    await _blobStorageHelper.CopyFileToPoisonAsync(connectionString, name, _config.inboundBlobName);
+                }
+            }
         }
         finally
         {

@@ -1,5 +1,6 @@
 namespace NHS.Screening.ReceiveCaasFile;
 
+using Common;
 using System.ComponentModel.DataAnnotations;
 
 public class ReceiveCaasFileConfig
@@ -15,8 +16,8 @@ public class ReceiveCaasFileConfig
     public bool AllowDeleteRecords { get; set; }
     [Required]
     public required int maxNumberOfChecks { get; set; }
-    [Required]
-    public required string caasfolder_STORAGE { get; set; }
+    public BlobStorageConfig? AzureWebJobsStorage { get; set; }
+    public BlobStorageConfig? caasfolder_STORAGE { get; set; }
     [Required]
     public required string inboundBlobName { get; set; }
     [Required]

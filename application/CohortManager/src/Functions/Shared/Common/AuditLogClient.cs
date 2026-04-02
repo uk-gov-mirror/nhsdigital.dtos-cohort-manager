@@ -77,8 +77,23 @@ public class AuditLogClient : IAuditLogClient
             var payload = JsonSerializer.SerializeToUtf8Bytes(message.RequestSnapshot, JsonOptions);
 
             var blobFile = new BlobFile(payload, blobPath);
-            var uri = await _blobStorageHelper.UploadFileToBlobStorageAndGetUri(
-                _config.AzureWebJobsStorage, AuditBlobContainer, blobFile, overwrite: true);
+
+            string? uri = null;
+
+            if (_config.AzureWebJobsStorage != null)
+            {
+                uri = await _blobStorageHelper.UploadFileToBlobStorageAndGetUri(
+                    _config.AzureWebJobsStorage.BlobServiceUri, AuditBlobContainer, blobFile, overwrite: true);
+            }
+            else
+            {
+                var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+                if (connectionString != null)
+                {
+                    uri = await _blobStorageHelper.UploadFileToBlobStorageAndGetUri(
+                        connectionString, AuditBlobContainer, blobFile, overwrite: true);
+                }
+            }
 
             if (uri is null)
             {

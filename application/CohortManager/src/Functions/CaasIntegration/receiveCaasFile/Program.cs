@@ -39,7 +39,7 @@ try
         services.AddScoped<IValidateDates, ValidateDates>();
         services.AddTransient<IAuditLogClient, AuditLogClient>();
         // Register health checks
-        services.AddBlobStorageHealthCheck("receiveCaasFile");
+        services.AddBlobStorageHealthCheck("receiveCaasFile", config.AzureWebJobsStorage!);
     })
     .AddTelemetry()
     .AddHttpClient()

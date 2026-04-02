@@ -68,7 +68,7 @@ try
         services.AddSingleton<IBlobStorageHelper, BlobStorageHelper>();
         services.AddTransient<IMeshToBlobTransferHandler, MeshToBlobTransferHandler>();
         // Register health checks
-        services.AddBlobStorageHealthCheck("RetrieveMeshFile");
+        services.AddBlobStorageHealthCheck("RetrieveMeshFile", config.AzureWebJobsStorage!);
     })
     .AddTelemetry()
     .AddExceptionHandler();

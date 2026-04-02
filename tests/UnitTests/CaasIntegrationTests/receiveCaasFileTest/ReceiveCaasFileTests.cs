@@ -1,20 +1,20 @@
 namespace NHS.CohortManager.Tests.CaasIntegrationTests;
 
-using System.IO;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Moq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Common;
 using Common.Interfaces;
-using NHS.Screening.ReceiveCaasFile;
-using Model;
 using DataServices.Client;
-using NHS.CohortManager.Tests.TestUtils;
-using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Model;
 using Model.Enums;
+using Moq;
+using NHS.CohortManager.Tests.TestUtils;
+using NHS.Screening.ReceiveCaasFile;
+using System.IO;
+using System.Linq.Expressions;
+using System.Net;
+using System.Threading.Tasks;
 
 [TestClass]
 public class ReceiveCaasFileTests
@@ -39,17 +39,28 @@ public class ReceiveCaasFileTests
 
         var testConfig = new ReceiveCaasFileConfig
         {
-            DemographicDataServiceURL = "DemographicDataServiceURL",
+            DemographicDataServiceURL = "DemographicDataServiceURL1",
             ScreeningLkpDataServiceURL = "ScreeningLkpDataServiceURL",
             DemographicURI = "DemographicURI",
             BatchSize = 2000,
             AllowDeleteRecords = true,
-            caasfolder_STORAGE = "caasfolder_STORAGE",
             ServiceBusConnectionString_client_internal = "ServiceBusConnectionString_client_internal",
             GetOrchestrationStatusURL = "GetOrchestrationStatusURL",
             inboundBlobName = "inbound",
             ParticipantManagementTopic = "ParticipantManagementTopic",
             maxNumberOfChecks = 50,
+            AzureWebJobsStorage = new BlobStorageConfig
+            {
+                AccountName = "accountname",
+                BlobServiceUri = "https://localhost:8888",
+                QueueServiceUri = "https://localhost:8888"
+            },
+            caasfolder_STORAGE = new BlobStorageConfig
+            {
+                AccountName = "accountname",
+                BlobServiceUri = "https://localhost:8888",
+                QueueServiceUri = "https://localhost:8888"
+            },
         };
 
         _config.Setup(c => c.Value).Returns(testConfig);
@@ -223,7 +234,7 @@ public class ReceiveCaasFileTests
 
         _blobStorageHelperMock
             .Verify(x => x.CopyFileToPoisonAsync(
-                It.IsAny<string>(),
+                It.IsAny<Uri>(),
                 It.IsAny<string>(),
                 It.IsAny<string>()
             ));
@@ -267,7 +278,7 @@ public class ReceiveCaasFileTests
 
         _blobStorageHelperMock
             .Verify(x => x.CopyFileToPoisonAsync(
-                It.IsAny<string>(),
+                It.IsAny<Uri>(),
                 It.IsAny<string>(),
                 It.IsAny<string>()
             ));

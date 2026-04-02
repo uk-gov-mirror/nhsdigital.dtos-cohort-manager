@@ -1,5 +1,6 @@
 namespace NHS.Screening.ProcessNemsUpdate;
 
+using Common;
 using System.ComponentModel.DataAnnotations;
 
 public class ProcessNemsUpdateConfig
@@ -25,7 +26,8 @@ public class ProcessNemsUpdateConfig
     [Required]
     public required string DemographicDataServiceURL { get; set; }
 
-    [Required]
-    public required string nemsmeshfolder_STORAGE { get; set; }
+    public BlobStorageConfig? AzureWebJobsStorage { get; set; }
+    public BlobStorageConfig? nemsmeshfolder_STORAGE { get; set; }
+
     public string NemsPoisonContainer { get; set; } = "nems-poison";
 }

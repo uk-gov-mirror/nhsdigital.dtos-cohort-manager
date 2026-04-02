@@ -1,6 +1,5 @@
 namespace Common;
 
-using System.Reflection.Metadata;
 using Microsoft.Extensions.Logging;
 using Model;
 using NHS.MESH.Client.Contracts.Services;
@@ -16,7 +15,8 @@ public class MeshToBlobTransferHandler : IMeshToBlobTransferHandler
     private readonly IBlobStorageHelper _blobStorageHelper;
     private readonly ILogger<MeshToBlobTransferHandler> _logger;
 
-    private string _blobConnectionString;
+    private Uri? _blobServiceUri;
+    private string? _blobConnectionString;
     private string _mailboxId;
     private string _destinationContainer;
 
@@ -28,11 +28,11 @@ public class MeshToBlobTransferHandler : IMeshToBlobTransferHandler
         _meshInboxService = meshInboxService;
         _blobStorageHelper = blobStorageHelper;
         _meshOperationService = meshOperationService;
-
     }
 
-    public async Task<bool> MoveFilesFromMeshToBlob(Func<MessageMetaData,bool> predicate, Func<MessageMetaData,string> fileNameFunction, string mailboxId, string blobConnectionString, string destinationContainer, bool executeHandshake = false)
+    public async Task<bool> MoveFilesFromMeshToBlob(Func<MessageMetaData,bool> predicate, Func<MessageMetaData,string> fileNameFunction, string mailboxId, Uri? blobServiceUri, string? blobConnectionString, string destinationContainer, bool executeHandshake = false)
     {
+        _blobServiceUri = blobServiceUri;
         _blobConnectionString = blobConnectionString;
         _mailboxId = mailboxId;
         _destinationContainer = destinationContainer;
@@ -51,7 +51,6 @@ public class MeshToBlobTransferHandler : IMeshToBlobTransferHandler
 
         do
         {
-
             var checkForMessages = await _meshInboxService.GetMessagesAsync(mailboxId);
             if(!checkForMessages.IsSuccessful)
             {
@@ -59,7 +58,6 @@ public class MeshToBlobTransferHandler : IMeshToBlobTransferHandler
                 // Log Exception
                 return false;
             }
-
 
             messageCount = checkForMessages.Response.Messages.Count();
 
@@ -86,7 +84,7 @@ public class MeshToBlobTransferHandler : IMeshToBlobTransferHandler
 
     }
 
-    private async Task<int> MoveAllMessagesToBlobStorage(IEnumerable<string> messages,Func<MessageMetaData,bool> predicate)
+    private async Task<int> MoveAllMessagesToBlobStorage(IEnumerable<string> messages, Func<MessageMetaData,bool> predicate)
     {
         var messagesMovedToBlobStorage = 0;
         foreach(var message in messages)
@@ -139,8 +137,15 @@ public class MeshToBlobTransferHandler : IMeshToBlobTransferHandler
         {
             return false;
         }
-
-        var uploadedToBlob = await _blobStorageHelper.UploadFileToBlobStorage(_blobConnectionString,_destinationContainer,blobFile);
+        var uploadedToBlob = false;
+        if (_blobServiceUri != null)
+        {
+            uploadedToBlob = await _blobStorageHelper.UploadFileToBlobStorage(_blobServiceUri, _destinationContainer, blobFile);
+        }
+        else if (_blobConnectionString != null)
+        {
+            uploadedToBlob = await _blobStorageHelper.UploadFileToBlobStorage(_blobConnectionString, _destinationContainer, blobFile);
+        }
 
         return uploadedToBlob;
     }

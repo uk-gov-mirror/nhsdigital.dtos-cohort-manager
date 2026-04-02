@@ -324,7 +324,6 @@ function_apps = {
   https_only                    = true
   http2_enabled                 = true
   remote_debugging_enabled      = false
-  storage_uses_managed_identity = null
   worker_32bit                  = false
   health_check_path             = "/api/health"
 
@@ -338,6 +337,7 @@ function_apps = {
       db_connection_string         = "DtOsDatabaseConnectionString"
       service_bus_connections      = ["internal"]
       storage_account_env_var_name = "caasfolder_STORAGE"
+      storage_uses_managed_identity = true
       app_urls = [
         {
           env_var_name     = "ExceptionFunctionURL"
@@ -396,6 +396,7 @@ function_apps = {
       app_service_plan_key         = "NonScaling"
       key_vault_url                = "KeyVaultConnectionString"
       storage_account_env_var_name = "caasfolder_STORAGE"
+      storage_uses_managed_identity = true
       app_urls = [
         {
           env_var_name     = "ExceptionFunctionURL"
@@ -414,6 +415,7 @@ function_apps = {
       app_service_plan_key         = "NonScaling"
       key_vault_url                = "KeyVaultConnectionString"
       storage_account_env_var_name = "nemsmeshfolder_STORAGE"
+      storage_uses_managed_identity = true
       service_bus_connections      = ["internal"]
       app_urls = [
         {
@@ -1191,6 +1193,7 @@ function_apps = {
       app_service_plan_key         = "NonScaling"
       key_vault_url                = "KeyVaultConnectionString"
       storage_account_env_var_name = "nemsmeshfolder_STORAGE"
+      storage_uses_managed_identity = true
       app_urls = [
         {
           env_var_name     = "ExceptionFunctionURL"

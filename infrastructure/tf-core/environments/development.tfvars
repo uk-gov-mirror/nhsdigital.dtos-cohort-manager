@@ -298,7 +298,7 @@ function_apps = {
   https_only                    = true
   http2_enabled                 = true
   remote_debugging_enabled      = false
-  storage_uses_managed_identity = null
+  storage_uses_managed_identity = true
   worker_32bit                  = false
   health_check_path             = "/api/health"
 
@@ -1390,6 +1390,7 @@ storage_accounts = {
   file_exceptions = {
     name_suffix                             = "filexptns"
     account_tier                            = "Standard"
+    shared_access_key_enabled               = true
     replication_type                        = "LRS"
     public_network_access_enabled           = false
     blob_properties_delete_retention_policy = 7

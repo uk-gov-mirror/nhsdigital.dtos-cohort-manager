@@ -1,8 +1,5 @@
 namespace NHS.CohortManager.Tests.CaasIntegrationTests;
 
-using System.Collections.Concurrent;
-using System.Linq.Expressions;
-using System.Reflection;
 using Common;
 using Common.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -10,6 +7,9 @@ using Microsoft.Extensions.Options;
 using Model;
 using Moq;
 using NHS.Screening.ReceiveCaasFile;
+using System.Collections.Concurrent;
+using System.Linq.Expressions;
+using System.Reflection;
 
 [TestClass]
 public class ProcessCaasFileTests
@@ -59,11 +59,22 @@ public class ProcessCaasFileTests
             DemographicDataServiceURL = "DemographicDataService",
             ScreeningLkpDataServiceURL = "ScreeningLkpDataServiceURL",
             GetOrchestrationStatusURL = "GetOrchestrationStatusURL",
-            caasfolder_STORAGE = "caasfolder_STORAGE",
             inboundBlobName = "inbound",
             ServiceBusConnectionString_client_internal = "ServiceBusConnectionString_client_internal",
             maxNumberOfChecks = 50,
-            BatchSize = 50
+            BatchSize = 50,
+            AzureWebJobsStorage = new BlobStorageConfig
+            {
+                AccountName = "accountname",
+                BlobServiceUri = "https://localhost:8888",
+                QueueServiceUri = "https://localhost:8888"
+            },
+            caasfolder_STORAGE = new BlobStorageConfig
+            {
+                AccountName = "accountname",
+                BlobServiceUri = "https://localhost:8888",
+                QueueServiceUri = "https://localhost:8888"
+            }
         };
     }
 

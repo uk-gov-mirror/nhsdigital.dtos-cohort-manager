@@ -29,7 +29,19 @@ public class CopyFailedBatchToBlob : ICopyFailedBatchToBlob
         {
             // we do this so that we do not have files with the same names either failing to be added or over writing another failed batch
             var blobFile = new BlobFile(stream, $"failedBatch-{Guid.NewGuid()}.json");
-            var copied = await _blobStorageHelper.UploadFileToBlobStorage(_config.caasfolder_STORAGE, "failed-batch", blobFile);
+            var copied = false;
+            if (_config.caasfolder_STORAGE != null)
+            {
+                copied = await _blobStorageHelper.UploadFileToBlobStorage(new Uri(_config.caasfolder_STORAGE.BlobServiceUri), "failed-batch", blobFile);
+            }
+            else
+            {
+                var connectionString = Environment.GetEnvironmentVariable("caasfolder_STORAGE");
+                if (connectionString != null)
+                {
+                    copied = await _blobStorageHelper.UploadFileToBlobStorage(connectionString, "failed-batch", blobFile);
+                }
+            }
 
             if (copied)
             {

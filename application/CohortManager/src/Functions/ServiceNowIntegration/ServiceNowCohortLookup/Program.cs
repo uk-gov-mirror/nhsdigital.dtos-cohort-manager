@@ -17,7 +17,7 @@ var host = new HostBuilder()
     {
         services.AddSingleton<IBlobStorageHelper, BlobStorageHelper>();
         // Register health checks
-        services.AddBlobStorageHealthCheck("ServiceNowCohortLookup");
+        services.AddBlobStorageHealthCheck("ServiceNowCohortLookup", config.AzureWebJobsStorage!);
     })
     .AddTelemetry()
     .AddExceptionHandler()

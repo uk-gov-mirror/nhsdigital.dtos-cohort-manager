@@ -19,7 +19,7 @@ var host = new HostBuilder()
         services.AddScoped<ICreateBasicParticipantData, CreateBasicParticipantData>();
         services.AddScoped<IAddBatchToQueue, AddBatchToQueue>();
         services.AddScoped<IBlobStorageHelper, BlobStorageHelper>();
-        services.AddBlobStorageHealthCheck("ProcessNemsUpdate");
+        services.AddBlobStorageHealthCheck("ProcessNemsUpdate", config.AzureWebJobsStorage!);
     })
     .AddTelemetry()
     .AddExceptionHandler()

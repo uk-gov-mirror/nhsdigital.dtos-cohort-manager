@@ -1,17 +1,15 @@
 namespace NHS.CohortManager.Tests.UnitTests.CheckDemographicTests;
 
 using Common;
-using NHS.CohortManager.Tests.TestUtils;
-using System.Net;
 using Microsoft.Extensions.Logging;
-using Moq;
+using Microsoft.Extensions.Options;
 using Model;
-using System.Text.Json;
-using System.Threading.Tasks;
+using Moq;
 using Moq.Protected;
 using NHS.Screening.ReceiveCaasFile;
-using Microsoft.Extensions.Options;
-using System.Net.Http.Headers;
+using System.Net;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 [TestClass]
 public class CallDurableDemographicFuncTests
@@ -34,12 +32,23 @@ public class CallDurableDemographicFuncTests
             DemographicURI = "DemographicURI",
             BatchSize = 2000,
             AllowDeleteRecords = true,
-            caasfolder_STORAGE = "caasfolder_STORAGE",
             ServiceBusConnectionString_client_internal = "ServiceBusConnectionString_client_internal",
             GetOrchestrationStatusURL = "GetOrchestrationStatusURL",
             inboundBlobName = "inbound",
             ParticipantManagementTopic = "ParticipantManagementTopic",
             maxNumberOfChecks = 50,
+            AzureWebJobsStorage = new BlobStorageConfig
+            {
+                AccountName = "accountname",
+                BlobServiceUri = "https://localhost:8888",
+                QueueServiceUri = "https://localhost:8888"
+            },
+            caasfolder_STORAGE = new BlobStorageConfig
+            {
+                AccountName = "accountname",
+                BlobServiceUri = "https://localhost:8888",
+                QueueServiceUri = "https://localhost:8888"
+            }
         };
 
         _config.Setup(c => c.Value).Returns(testConfig);

@@ -1,6 +1,7 @@
 namespace Common;
 
 using Azure;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
@@ -16,20 +17,38 @@ public class BlobStorageHelper : IBlobStorageHelper
     }
     public async Task CopyFileToPoisonAsync(string connectionString, string fileName, string containerName)
     {
-        // Delegate to the extended overload to avoid duplication; preserve env var behaviour
         var poisonContainerName = Environment.GetEnvironmentVariable("fileExceptions");
-        await CopyFileToPoisonAsync(connectionString, fileName, containerName, poisonContainerName, addTimestamp: false);
+        await CopyFileToPoisonAsync(connectionString, fileName, containerName, poisonContainerName!, addTimestamp: false);
+    }
+
+    public async Task CopyFileToPoisonAsync(Uri serviceUri, string fileName, string containerName)
+    {
+        var poisonContainerName = Environment.GetEnvironmentVariable("fileExceptions");
+        await CopyFileToPoisonAsync(serviceUri, fileName, containerName, poisonContainerName!, addTimestamp: false);
     }
 
     public async Task CopyFileToPoisonAsync(string connectionString, string fileName, string containerName, string poisonContainerName, bool addTimestamp = false)
     {
         var sourceBlobServiceClient = new BlobServiceClient(connectionString);
+        var destinationBlobServiceClient = new BlobServiceClient(connectionString);
+        await CopyFileToPoisonAsync(sourceBlobServiceClient, destinationBlobServiceClient, fileName, containerName, poisonContainerName, addTimestamp: false);
+    }
+
+    public async Task CopyFileToPoisonAsync(Uri serviceUri, string fileName, string containerName, string poisonContainerName, bool addTimestamp = false)
+    {
+        var defaultAzureCredential = new DefaultAzureCredential();
+        var sourceBlobServiceClient = new BlobServiceClient(serviceUri, defaultAzureCredential);
+        var destinationBlobServiceClient = new BlobServiceClient(serviceUri, defaultAzureCredential);
+        await CopyFileToPoisonAsync(sourceBlobServiceClient, destinationBlobServiceClient, fileName, containerName, poisonContainerName, addTimestamp: false);
+    }
+
+    private async Task CopyFileToPoisonAsync(BlobServiceClient sourceBlobServiceClient, BlobServiceClient destinationBlobServiceClient, string fileName, string containerName, string poisonContainerName, bool addTimestamp = false)
+    {
         var sourceContainerClient = sourceBlobServiceClient.GetBlobContainerClient(containerName);
         var sourceBlobClient = sourceContainerClient.GetBlobClient(fileName);
 
         BlobLeaseClient sourceBlobLease = new(sourceBlobClient);
 
-        var destinationBlobServiceClient = new BlobServiceClient(connectionString);
         var destinationContainerClient = destinationBlobServiceClient.GetBlobContainerClient(poisonContainerName);
 
         // Conditionally add timestamp to prevent collisions and maintain audit trail
@@ -65,6 +84,17 @@ public class BlobStorageHelper : IBlobStorageHelper
     public async Task<bool> UploadFileToBlobStorage(string connectionString, string containerName, BlobFile blobFile, bool overwrite = false)
     {
         var sourceBlobServiceClient = new BlobServiceClient(connectionString);
+        return await UploadFileToBlobStorage(sourceBlobServiceClient, "failed-batch", blobFile);
+    }
+
+    public async Task<bool> UploadFileToBlobStorage(Uri serviceUri, string containerName, BlobFile blobFile, bool overwrite = false)
+    {
+        var sourceBlobServiceClient = new BlobServiceClient(serviceUri, new DefaultAzureCredential());
+        return await UploadFileToBlobStorage(sourceBlobServiceClient, "failed-batch", blobFile);
+    }
+
+    private async Task<bool> UploadFileToBlobStorage(BlobServiceClient sourceBlobServiceClient, string containerName, BlobFile blobFile, bool overwrite = false)
+    {
         var sourceContainerClient = sourceBlobServiceClient.GetBlobContainerClient(containerName);
         var sourceBlobClient = sourceContainerClient.GetBlobClient(blobFile.FileName);
 
@@ -83,9 +113,20 @@ public class BlobStorageHelper : IBlobStorageHelper
         return true;
     }
 
+    public async Task<string?> UploadFileToBlobStorageAndGetUri(Uri serviceUri, string containerName, BlobFile blobFile, bool overwrite = false)
+    {
+        var blobServiceClient = new BlobServiceClient(serviceUri, new DefaultAzureCredential());
+        return await UploadFileToBlobStorageAndGetUri(blobServiceClient, containerName, blobFile, overwrite);
+    }
+
     public async Task<string?> UploadFileToBlobStorageAndGetUri(string connectionString, string containerName, BlobFile blobFile, bool overwrite = false)
     {
         var blobServiceClient = new BlobServiceClient(connectionString);
+        return await UploadFileToBlobStorageAndGetUri(blobServiceClient, containerName, blobFile, overwrite);
+    }
+
+    private async Task<string?> UploadFileToBlobStorageAndGetUri(BlobServiceClient blobServiceClient, string containerName, BlobFile blobFile, bool overwrite = false)
+    {
         var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
         var blobClient = containerClient.GetBlobClient(blobFile.FileName);
 
@@ -104,10 +145,21 @@ public class BlobStorageHelper : IBlobStorageHelper
 
     public async Task<BlobFile> GetFileFromBlobStorage(string connectionString, string containerName, string fileName)
     {
+        var blobServiceClient = new BlobServiceClient(connectionString);
+        return await GetFileFromBlobStorage(blobServiceClient, containerName, fileName);
+    }
+
+    public async Task<BlobFile> GetFileFromBlobStorage(Uri serviceUri, string containerName, string fileName)
+    {
+        var blobServiceClient = new BlobServiceClient(serviceUri, new DefaultAzureCredential());
+        return await GetFileFromBlobStorage(blobServiceClient, containerName, fileName);
+    }
+
+    private async Task<BlobFile> GetFileFromBlobStorage(BlobServiceClient blobServiceClient, string containerName, string fileName)
+    {
 
         _logger.LogInformation("Downloading File: {FileName} From blobStorage Container: {ContainerName}", fileName, containerName);
 
-        var blobServiceClient = new BlobServiceClient(connectionString);
         var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
         var blobClient = containerClient.GetBlobClient(fileName);
 
@@ -123,5 +175,4 @@ public class BlobStorageHelper : IBlobStorageHelper
         return null;
 
     }
-
 }

@@ -41,7 +41,18 @@ public class ProcessNemsUpdateTests
             DemographicDataServiceURL = "ParticipantDemographicDataServiceURL",
             ServiceBusConnectionString_client_internal = "ServiceBusConnectionString_client_internal",
             ParticipantManagementTopic = "update-participant-queue",
-            nemsmeshfolder_STORAGE = "BlobStorage_ConnectionString"
+            AzureWebJobsStorage = new BlobStorageConfig
+            {
+                AccountName = "accountname",
+                BlobServiceUri = "https://localhost:8888",
+                QueueServiceUri = "https://localhost:8888"
+            },
+            nemsmeshfolder_STORAGE = new BlobStorageConfig
+            {
+                AccountName = "accountname",
+                BlobServiceUri = "https://localhost:8888",
+                QueueServiceUri = "https://localhost:8888"
+            }
         };
 
         _config.Setup(c => c.Value).Returns(testConfig);
@@ -68,7 +79,7 @@ public class ProcessNemsUpdateTests
         // Default: simulate successful poison copy
         _blobStorageHelperMock
             .Setup(x => x.CopyFileToPoisonAsync(
-                It.IsAny<string>(),
+                It.IsAny<Uri>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
@@ -114,7 +125,7 @@ public class ProcessNemsUpdateTests
 
         // Verify poison copy occurs due to null NHS number handling
         _blobStorageHelperMock.Verify(x => x.CopyFileToPoisonAsync(
-            "BlobStorage_ConnectionString",
+            new Uri("https://localhost:8888"),
             _fileName,
             "nems-updates",
             "nems-poison",
@@ -142,7 +153,7 @@ public class ProcessNemsUpdateTests
 
         // Assert: poison copy invoked
         _blobStorageHelperMock.Verify(x => x.CopyFileToPoisonAsync(
-            "BlobStorage_ConnectionString",
+            new Uri("https://localhost:8888"),
             _fileName,
             "nems-updates",
             "nems-poison",
@@ -568,7 +579,7 @@ public class ProcessNemsUpdateTests
         await _sut.Run(fileStream, _fileName);
         // Assert
         _blobStorageHelperMock.Verify(x => x.CopyFileToPoisonAsync(
-            "BlobStorage_ConnectionString",
+            new Uri("https://localhost:8888"),
             _fileName,
             "nems-updates",
             "nems-poison",
@@ -614,7 +625,7 @@ public class ProcessNemsUpdateTests
         await _sut.Run(fileStream, _fileName);
         // Assert
         _blobStorageHelperMock.Verify(x => x.CopyFileToPoisonAsync(
-            "BlobStorage_ConnectionString",
+            new Uri("https://localhost:8888"),
             _fileName,
             "nems-updates",
             "nems-poison",
@@ -644,7 +655,7 @@ public class ProcessNemsUpdateTests
             .ReturnsAsync("invalid-json");
         _blobStorageHelperMock
             .Setup(x => x.CopyFileToPoisonAsync(
-                It.IsAny<string>(),
+                It.IsAny<Uri>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
@@ -654,7 +665,7 @@ public class ProcessNemsUpdateTests
         await _sut.Run(fileStream, _fileName);
         // Assert
         _blobStorageHelperMock.Verify(x => x.CopyFileToPoisonAsync(
-            "BlobStorage_ConnectionString",
+            new Uri("https://localhost:8888"),
             _fileName,
             "nems-updates",
             "nems-poison",
@@ -698,7 +709,7 @@ public class ProcessNemsUpdateTests
         await _sut.Run(fileStream, _fileName);
         // Assert
         _blobStorageHelperMock.Verify(x => x.CopyFileToPoisonAsync(
-            "BlobStorage_ConnectionString",
+            new Uri("https://localhost:8888"),
             _fileName,
             "nems-updates",
             "nems-poison",
@@ -732,7 +743,7 @@ public class ProcessNemsUpdateTests
 
         // Assert - Verify poison container is never called on successful processing
         _blobStorageHelperMock.Verify(x => x.CopyFileToPoisonAsync(
-            It.IsAny<string>(),
+            It.IsAny<Uri>(),
             It.IsAny<string>(),
             It.IsAny<string>(),
             It.IsAny<string>(),

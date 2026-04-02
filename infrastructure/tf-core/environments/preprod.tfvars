@@ -59,7 +59,7 @@ regions = {
         service_delegation_name    = "Microsoft.App/environments"
         service_delegation_actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
       }
-      power-bi= {
+      power-bi = {
         cidr_newbits               = 8
         cidr_offset                = 6
         delegation_name            = "Microsoft.PowerPlatform/vnetaccesslinks"
@@ -298,25 +298,25 @@ function_apps = {
   docker_CI_enable  = "true"
   docker_img_prefix = "cohort-manager"
 
-  enable_appsrv_storage         = "false"
-  ftps_state                    = "Disabled"
-  https_only                    = true
-  http2_enabled                 = true
-  remote_debugging_enabled      = false
-  storage_uses_managed_identity = null
-  worker_32bit                  = false
-  health_check_path             = "/api/health"
+  enable_appsrv_storage    = "false"
+  ftps_state               = "Disabled"
+  https_only               = true
+  http2_enabled            = true
+  remote_debugging_enabled = false
+  worker_32bit             = false
+  health_check_path        = "/api/health"
 
   fa_config = {
 
     ReceiveCaasFile = {
-      name_suffix                  = "receive-caas-file"
-      function_endpoint_name       = "ReceiveCaasFile"
-      app_service_plan_key         = "NonScaling"
-      producer_to_service_bus      = ["dtoss-nsp"]
-      db_connection_string         = "DtOsDatabaseConnectionString"
-      service_bus_connections      = ["internal"]
-      storage_account_env_var_name = "caasfolder_STORAGE"
+      name_suffix                   = "receive-caas-file"
+      function_endpoint_name        = "ReceiveCaasFile"
+      app_service_plan_key          = "NonScaling"
+      producer_to_service_bus       = ["dtoss-nsp"]
+      db_connection_string          = "DtOsDatabaseConnectionString"
+      service_bus_connections       = ["internal"]
+      storage_account_env_var_name  = "caasfolder_STORAGE"
+      storage_uses_managed_identity = true
       app_urls = [
         {
           env_var_name     = "ExceptionFunctionURL"
@@ -370,11 +370,12 @@ function_apps = {
     }
 
     RetrieveMeshFile = {
-      name_suffix                  = "retrieve-mesh-file"
-      function_endpoint_name       = "RetrieveMeshFile"
-      app_service_plan_key         = "NonScaling"
-      key_vault_url                = "KeyVaultConnectionString"
-      storage_account_env_var_name = "caasfolder_STORAGE"
+      name_suffix                   = "retrieve-mesh-file"
+      function_endpoint_name        = "RetrieveMeshFile"
+      app_service_plan_key          = "NonScaling"
+      key_vault_url                 = "KeyVaultConnectionString"
+      storage_account_env_var_name  = "caasfolder_STORAGE"
+      storage_uses_managed_identity = true
       app_urls = [
         {
           env_var_name     = "ExceptionFunctionURL"
@@ -387,13 +388,14 @@ function_apps = {
       }
     }
 
-     ProcessNemsUpdate = {
-      name_suffix                  = "process-nems-update"
-      function_endpoint_name       = "ProcessNemsUpdate"
-      app_service_plan_key         = "NonScaling"
-      key_vault_url                = "KeyVaultConnectionString"
-      storage_account_env_var_name = "nemsmeshfolder_STORAGE"
-      service_bus_connections      = ["internal"]
+    ProcessNemsUpdate = {
+      name_suffix                   = "process-nems-update"
+      function_endpoint_name        = "ProcessNemsUpdate"
+      app_service_plan_key          = "NonScaling"
+      key_vault_url                 = "KeyVaultConnectionString"
+      storage_account_env_var_name  = "nemsmeshfolder_STORAGE"
+      storage_uses_managed_identity = true
+      service_bus_connections       = ["internal"]
       app_urls = [
         {
           env_var_name     = "ExceptionFunctionURL"
@@ -403,7 +405,7 @@ function_apps = {
           env_var_name     = "RetrievePdsDemographicURL"
           function_app_key = "RetrievePDSDemographic"
         },
-                {
+        {
           env_var_name     = "ManageNemsSubscriptionUnsubscribeURL"
           function_app_key = "ManageNemsSubscription"
           endpoint_name    = "Unsubscribe"
@@ -682,7 +684,7 @@ function_apps = {
         }
       ]
       env_vars_static = {
-        AcceptableLatencyThresholdMs = "500"
+        AcceptableLatencyThresholdMs  = "500"
         RetrieveSupersededRecordsLast = "true"
       }
     }
@@ -879,7 +881,7 @@ function_apps = {
       ]
       env_vars_static = {
         AcceptableLatencyThresholdMs = "500"
-        MaxRetryCount=3
+        MaxRetryCount                = 3
       }
     }
 
@@ -1165,11 +1167,12 @@ function_apps = {
     }
 
     NemsMeshRetrieval = {
-      name_suffix                  = "nems-mesh-retrieval"
-      function_endpoint_name       = "NemsMeshRetrieval"
-      app_service_plan_key         = "NonScaling"
-      key_vault_url                = "KeyVaultConnectionString"
-      storage_account_env_var_name = "nemsmeshfolder_STORAGE"
+      name_suffix                   = "nems-mesh-retrieval"
+      function_endpoint_name        = "NemsMeshRetrieval"
+      app_service_plan_key          = "NonScaling"
+      key_vault_url                 = "KeyVaultConnectionString"
+      storage_account_env_var_name  = "nemsmeshfolder_STORAGE"
+      storage_uses_managed_identity = true
       app_urls = [
         {
           env_var_name     = "ExceptionFunctionURL"

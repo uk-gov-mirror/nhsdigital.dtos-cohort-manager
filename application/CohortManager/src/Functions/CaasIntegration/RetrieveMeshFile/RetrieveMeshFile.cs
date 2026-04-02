@@ -1,17 +1,15 @@
 namespace NHS.Screening.RetrieveMeshFile;
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Common;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Model;
 using NHS.MESH.Client.Models;
+using System;
+using System.Globalization;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 
 public class RetrieveMeshFile
@@ -20,11 +18,13 @@ public class RetrieveMeshFile
 
     private readonly IMeshToBlobTransferHandler _meshToBlobTransferHandler;
     private readonly string _mailboxId;
-    private readonly string _blobConnectionString;
+    private readonly string? _blobConnectionString;
+    private readonly Uri? _blobServiceUri;
     private readonly IBlobStorageHelper _blobStorageHelper;
     private readonly RetrieveMeshFileConfig _config;
     private const string NextHandShakeTimeConfigKey = "NextHandShakeTime";
     private const string ConfigFileName = "MeshState.json";
+    private const string ConfigContainerName = "config";
 
     public RetrieveMeshFile(ILogger<RetrieveMeshFile> logger, IMeshToBlobTransferHandler meshToBlobTransferHandler, IBlobStorageHelper blobStorageHelper, IOptions<RetrieveMeshFileConfig> options)
     {
@@ -33,7 +33,14 @@ public class RetrieveMeshFile
         _blobStorageHelper = blobStorageHelper;
         _mailboxId = options.Value.BSSMailBox;
         _config = options.Value;
-        _blobConnectionString = _config.caasfolder_STORAGE;
+        if (_config.nemsmeshfolder_STORAGE != null)
+        {
+            _blobServiceUri = new Uri(_config.nemsmeshfolder_STORAGE.BlobServiceUri);
+        }
+        else
+        {
+            _blobConnectionString = Environment.GetEnvironmentVariable("nemsmeshfolder_STORAGE");
+        }
     }
     /// <summary>
     /// This function polls the MESH Mailbox every 5 minutes, if there is a file posted to the mailbox.
@@ -51,8 +58,7 @@ public class RetrieveMeshFile
         try
         {
             var shouldExecuteHandShake = await ShouldExecuteHandShake();
-            var result = await _meshToBlobTransferHandler.MoveFilesFromMeshToBlob(messageFilter, fileNameFunction, _mailboxId, _blobConnectionString, "inbound", shouldExecuteHandShake);
-
+            var result = await _meshToBlobTransferHandler.MoveFilesFromMeshToBlob(messageFilter, fileNameFunction, _mailboxId, _blobServiceUri, _blobConnectionString, "inbound", shouldExecuteHandShake);
             if (!result)
             {
                 _logger.LogError("An error was encountered while moving files from Mesh to Blob");
@@ -74,10 +80,18 @@ public class RetrieveMeshFile
 
         Dictionary<string, string> configValues;
         TimeSpan handShakeInterval = new TimeSpan(0, 23, 54, 0);
-        var meshState = await _blobStorageHelper.GetFileFromBlobStorage(_blobConnectionString, "config", ConfigFileName);
+        BlobFile? meshState = null;
+        if (_blobServiceUri != null)
+        {
+            meshState = await _blobStorageHelper.GetFileFromBlobStorage(_blobServiceUri, ConfigContainerName, ConfigFileName);
+        }
+        else if (_blobConnectionString != null)
+        {
+            meshState = await _blobStorageHelper.GetFileFromBlobStorage(_blobConnectionString, ConfigContainerName, ConfigFileName);
+        }
+
         if (meshState == null)
         {
-
             _logger.LogInformation("MeshState File did not exist, Creating new MeshState File in blob Storage");
             configValues = new Dictionary<string, string>
             {
@@ -140,7 +154,15 @@ public class RetrieveMeshFile
             using (var stream = GenerateStreamFromString(jsonString))
             {
                 var blobFile = new BlobFile(stream, ConfigFileName);
-                var result = await _blobStorageHelper.UploadFileToBlobStorage(_blobConnectionString, "config", blobFile, true);
+                var result = false;
+                if (_blobServiceUri != null)
+                {
+                    result = await _blobStorageHelper.UploadFileToBlobStorage(_blobServiceUri, ConfigContainerName, blobFile, true);
+                }
+                else if (_blobConnectionString != null)
+                {
+                    result = await _blobStorageHelper.UploadFileToBlobStorage(_blobConnectionString, ConfigContainerName, blobFile, true);
+                }
                 return result;
             }
         }
