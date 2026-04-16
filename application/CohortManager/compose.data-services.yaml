@@ -170,8 +170,6 @@ services:
        - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
        - AcceptableLatencyThresholdMs=500
 
-
-
 networks:
   cohman-network:
     external: true

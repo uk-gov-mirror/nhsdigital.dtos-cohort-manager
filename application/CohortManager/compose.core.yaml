@@ -136,7 +136,6 @@ services:
       - RetrievePdsDemographicURL=${RETRIEVE_PDS_DEMOGRAPHIC_API_BASE_URL}RetrievePDSDemographic
       - SendServiceNowMessageURL=${SERVICENOW_MESSAGE_HANDLER_API_BASE_URL}send
       - ParticipantManagementURL=${PARTICIPANT_MANAGEMENT_DATA_SERVICE_API_BASE_URL}ParticipantManagementDataService
-      # - ManageNemsSubscriptionSubscribeURL=${MANAGE_NEMS_SUBSCRIPTION_API_BASE_URL}Subscribe
       - ManageNemsSubscriptionSubscribeURL=${MANAGE_CAAS_SUBSCRIPTION_API_BASE_URL}Subscribe
       - CohortDistributionTopic=cohort-distribution-topic
 
@@ -158,8 +157,6 @@ services:
       - ParticipantManagementUrl=${PARTICIPANT_MANAGEMENT_DATA_SERVICE_API_BASE_URL}ParticipantManagementDataService
       - ParticipantDemographicDataServiceURL=${PARTICIPANT_DEMOGRAPHIC_DATA_SERVICE_API_BASE_URL}ParticipantDemographicDataService/
       - ExceptionFunctionURL=${CREATE_EXCEPTION_API_BASE_URL}CreateException
-      # - ManageNemsSubscriptionUnsubscribeURL=${MANAGE_NEMS_SUBSCRIPTION_API_BASE_URL}Unsubscribe
-      # - ManageNemsSubscriptionSubscribeURL=${MANAGE_NEMS_SUBSCRIPTION_API_BASE_URL}Subscribe
       - ManageNemsSubscriptionUnsubscribeURL=${MANAGE_CAAS_SUBSCRIPTION_API_BASE_URL}Unsubscribe
       - ManageNemsSubscriptionSubscribeURL=${MANAGE_CAAS_SUBSCRIPTION_API_BASE_URL}Subscribe
       - RetrievePdsDemographicURL=${RETRIEVE_PDS_DEMOGRAPHIC_API_BASE_URL}RetrievePDSDemographic
