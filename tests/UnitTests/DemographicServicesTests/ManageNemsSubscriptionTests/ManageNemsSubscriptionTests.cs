@@ -35,6 +35,8 @@ public class ManageNemsSubscriptionTests
             NemsFhirEndpoint = "https://nems.fhir.endpoint",
             NemsFromAsid = "FromAsid",
             NemsToAsid = "ToAsid",
+            NemsOdsCode = "T8T9T",
+            NemsMeshMailboxId = "T8T9TOT001",
             NemsSubscriptionProfile = "SubscriptionProfile",
             NemsSubscriptionCriteria = "SubscriptionCriteria",
             NemsLocalCertPath = null,
