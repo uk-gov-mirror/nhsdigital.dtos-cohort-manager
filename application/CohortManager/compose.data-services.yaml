@@ -14,7 +14,7 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
       - ASPNETCORE_URLS=http://*:7911
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
       - AcceptableLatencyThresholdMs=500
 
   bs-request-audit-data-service:
@@ -31,7 +31,7 @@ services:
       - 7989:7989
     environment:
       - ASPNETCORE_URLS=http://*:7989
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
       - AcceptableLatencyThresholdMs=500
 
   screening-lkp-data-service:
@@ -45,7 +45,7 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
       - ASPNETCORE_URLS=http://*:8996
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
       - AcceptableLatencyThresholdMs=500
 
   gene-code-lkp-data-service:
@@ -60,7 +60,7 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
       - ASPNETCORE_URLS=http://*:7991
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
       - AcceptableLatencyThresholdMs=500
 
   higher-risk-referral-reason-lkp-data-service:
@@ -75,7 +75,7 @@ services:
     profiles: [not-implemented]
     environment:
       - ASPNETCORE_URLS=http://*:7992
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
       - AcceptableLatencyThresholdMs=500
 
   participant-demographic-data-service:
@@ -91,7 +91,7 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
       - ASPNETCORE_URLS=http://*:7993
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
       - AcceptableLatencyThresholdMs=500
 
   participant-management-data-service:
@@ -107,7 +107,7 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
       - ASPNETCORE_URLS=http://*:7994
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
       - AcceptableLatencyThresholdMs=500
 
   cohort-distribution-data-service:
@@ -123,7 +123,7 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
       - ASPNETCORE_URLS=http://*:7992
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
       - AcceptableLatencyThresholdMs=500
 
   nems-subscription-data-service:
@@ -138,7 +138,7 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
       - ASPNETCORE_URLS=http://*:7990
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
       - AcceptableLatencyThresholdMs=500
 
   reference-data-service:
@@ -152,7 +152,7 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
       - ASPNETCORE_URLS=http://*:7988
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
       - AcceptableLatencyThresholdMs=500
 
   servicenow-cases-data-service:
@@ -167,7 +167,7 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
      environment:
        - ASPNETCORE_URLS=http://*:9996
-       - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+       - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
        - AcceptableLatencyThresholdMs=500
 
 

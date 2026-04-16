@@ -44,6 +44,12 @@ on:
         description: 'The name of the Azure Container Registry.'
         required: true
 
+env:
+  DOTNET_BASE_IMAGE_NAME: cohort-manager-dotnet-base
+  FUNCTION_BASE_IMAGE_NAME: cohort-manager-function-base
+  GHCR_REGISTRY: ghcr.io/nhsdigital
+  DEVOPS_TEMPLATES_REPO: NHSDigital/dtos-devops-templates
+
 jobs:
   get-functions:
     runs-on: ubuntu-latest
@@ -63,7 +69,7 @@ jobs:
       - name: Checkout dtos-devops-templates repository
         uses: actions/checkout@v6
         with:
-          repository: NHSDigital/dtos-devops-templates
+          repository: ${{ env.DEVOPS_TEMPLATES_REPO }}
           path: templates
           ref: main
 
@@ -123,25 +129,25 @@ jobs:
               PR_NUM_TAG="main"
           fi
 
-          docker build -f Dockerfile.dotnet.base -t cohort-manager-dotnet-base:latest .
-          docker tag cohort-manager-dotnet-base:latest "ghcr.io/nhsdigital/cohort-manager-dotnet-base:${PR_NUM_TAG}"
-          docker tag cohort-manager-dotnet-base:latest "ghcr.io/nhsdigital/cohort-manager-dotnet-base:${SHORT_COMMIT_HASH}"
+          docker build -f Dockerfile.dotnet.base -t ${DOTNET_BASE_IMAGE_NAME}:latest .
+          docker tag ${DOTNET_BASE_IMAGE_NAME}:latest "${GHCR_REGISTRY}/${DOTNET_BASE_IMAGE_NAME}:${PR_NUM_TAG}"
+          docker tag ${DOTNET_BASE_IMAGE_NAME}:latest "${GHCR_REGISTRY}/${DOTNET_BASE_IMAGE_NAME}:${SHORT_COMMIT_HASH}"
 
-          docker build -f Dockerfile.function.base -t cohort-manager-function-base:latest .
-          docker tag cohort-manager-function-base:latest "ghcr.io/nhsdigital/cohort-manager-function-base:${PR_NUM_TAG}"
-          docker tag cohort-manager-function-base:latest "ghcr.io/nhsdigital/cohort-manager-function-base:${SHORT_COMMIT_HASH}"
+          docker build -f Dockerfile.function.base -t ${FUNCTION_BASE_IMAGE_NAME}:latest .
+          docker tag ${FUNCTION_BASE_IMAGE_NAME}:latest "${GHCR_REGISTRY}/${FUNCTION_BASE_IMAGE_NAME}:${PR_NUM_TAG}"
+          docker tag ${FUNCTION_BASE_IMAGE_NAME}:latest "${GHCR_REGISTRY}/${FUNCTION_BASE_IMAGE_NAME}:${SHORT_COMMIT_HASH}"
 
-          docker push "ghcr.io/nhsdigital/cohort-manager-dotnet-base:${PR_NUM_TAG}"
-          docker push "ghcr.io/nhsdigital/cohort-manager-dotnet-base:${SHORT_COMMIT_HASH}"
+          docker push "${GHCR_REGISTRY}/${DOTNET_BASE_IMAGE_NAME}:${PR_NUM_TAG}"
+          docker push "${GHCR_REGISTRY}/${DOTNET_BASE_IMAGE_NAME}:${SHORT_COMMIT_HASH}"
 
-          docker push "ghcr.io/nhsdigital/cohort-manager-function-base:${PR_NUM_TAG}"
-          docker push "ghcr.io/nhsdigital/cohort-manager-function-base:${SHORT_COMMIT_HASH}"
+          docker push "${GHCR_REGISTRY}/${FUNCTION_BASE_IMAGE_NAME}:${PR_NUM_TAG}"
+          docker push "${GHCR_REGISTRY}/${FUNCTION_BASE_IMAGE_NAME}:${SHORT_COMMIT_HASH}"
 
           if [ "${GITHUB_REF}" == 'refs/heads/main' ]; then
-              docker tag cohort-manager-dotnet-base:latest "ghcr.io/nhsdigital/cohort-manager-dotnet-base:latest"
-              docker tag cohort-manager-function-base:latest "ghcr.io/nhsdigital/cohort-manager-function-base:latest"
-              docker push "ghcr.io/nhsdigital/cohort-manager-dotnet-base:latest"
-              docker push "ghcr.io/nhsdigital/cohort-manager-function-base:latest"
+              docker tag ${DOTNET_BASE_IMAGE_NAME}:latest "${GHCR_REGISTRY}/${DOTNET_BASE_IMAGE_NAME}:latest"
+              docker tag ${FUNCTION_BASE_IMAGE_NAME}:latest "${GHCR_REGISTRY}/${FUNCTION_BASE_IMAGE_NAME}:latest"
+              docker push "${GHCR_REGISTRY}/${DOTNET_BASE_IMAGE_NAME}:latest"
+              docker push "${GHCR_REGISTRY}/${FUNCTION_BASE_IMAGE_NAME}:latest"
           fi
 
       - name: Set Image Tags
@@ -161,8 +167,8 @@ jobs:
 
           echo "Image Tag = ${IMAGE_TAG}"
 
-          echo "DOTNET_BASE_IMAGE=ghcr.io/nhsdigital/cohort-manager-dotnet-base:${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
-          echo "FUNCTION_BASE_IMAGE=ghcr.io/nhsdigital/cohort-manager-function-base:${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
+          echo "DOTNET_BASE_IMAGE=${GHCR_REGISTRY}/${DOTNET_BASE_IMAGE_NAME}:${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
+          echo "FUNCTION_BASE_IMAGE=${GHCR_REGISTRY}/${FUNCTION_BASE_IMAGE_NAME}:${IMAGE_TAG}" >> "${GITHUB_OUTPUT}"
 
   build-and-push:
     runs-on: ubuntu-latest
@@ -188,7 +194,7 @@ jobs:
       - name: Checkout dtos-devops-templates repository
         uses: actions/checkout@v6
         with:
-          repository: NHSDigital/dtos-devops-templates
+          repository: ${{ env.DEVOPS_TEMPLATES_REPO }}
           path: templates
           ref: main
 

@@ -11,20 +11,20 @@ services:
       args:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
-      - ServiceBusConnectionString_internal=Endpoint=sb://service-bus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+      - ServiceBusConnectionString_internal=${SERVICE_BUS_CONNECTION_STRING}
       - CohortDistributionTopic=cohort-distribution-topic
       - DistributeParticipantSubscription=distribute-participant-sub
       - AzureWebJobsStorage=${AZURITE_CONNECTION_STRING}
       - WEBSITE_HOSTNAME=distribute-participant:80
-      - ExceptionFunctionURL=http://create-exception:7070/api/CreateException
-      - TransformDataServiceURL=http://transform-data-service:7080/api/TransformDataService
-      - ParticipantManagementUrl=http://participant-management-data-service:7994/api/ParticipantManagementDataService
-      - CohortDistributionDataServiceUrl=http://cohort-distribution-data-service:7992/api/CohortDistributionDataService/
-      - LookupValidationURL=http://lookup-validation:7075/api/LookupValidation
-      - StaticValidationURL=http://static-validation:7074/api/StaticValidation
-      - ParticipantDemographicDataServiceURL=http://participant-demographic-data-service:7993/api/ParticipantDemographicDataService
-      - RemoveOldValidationRecordUrl=http://remove-validation-exception-data:7085/api/RemoveValidationExceptionData
-      - SendServiceNowMessageURL=http://servicenow-message-handler:9092/api/servicenow/send
+      - ExceptionFunctionURL=${CREATE_EXCEPTION_API_BASE_URL}CreateException
+      - TransformDataServiceURL=${TRANSFORM_DATA_SERVICE_API_BASE_URL}TransformDataService
+      - ParticipantManagementUrl=${PARTICIPANT_MANAGEMENT_DATA_SERVICE_API_BASE_URL}ParticipantManagementDataService
+      - CohortDistributionDataServiceUrl=${COHORT_DISTRIBUTION_DATA_SERVICE_API_BASE_URL}CohortDistributionDataService/
+      - LookupValidationURL=${LOOKUP_VALIDATION_API_BASE_URL}LookupValidation
+      - StaticValidationURL=${STATIC_VALIDATION_API_BASE_URL}StaticValidation
+      - ParticipantDemographicDataServiceURL=${PARTICIPANT_DEMOGRAPHIC_DATA_SERVICE_API_BASE_URL}ParticipantDemographicDataService
+      - RemoveOldValidationRecordUrl=${REMOVE_VALIDATION_EXCEPTION_API_BASE_URL}RemoveValidationExceptionData
+      - SendServiceNowMessageURL=${SERVICENOW_MESSAGE_HANDLER_API_BASE_URL}send
       - IgnoreParticipantExceptions=false
       - IsExtractedToBSSelect=true
       - MaxLookupValidationRetries=3
@@ -43,10 +43,10 @@ services:
       - 7078:7078
     environment:
       - ASPNETCORE_URLS=http://*:7078
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
-      - ExceptionFunctionURL=http://create-exception:7070/api/CreateException
-      - CohortDistributionDataServiceURL=http://cohort-distribution-data-service:7992/api/CohortDistributionDataService/
-      - BsSelectRequestAuditDataService=http://bs-request-audit-data-service:7989/api/BsSelectRequestAuditDataService/
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
+      - ExceptionFunctionURL=${CREATE_EXCEPTION_API_BASE_URL}CreateException
+      - CohortDistributionDataServiceURL=${COHORT_DISTRIBUTION_DATA_SERVICE_API_BASE_URL}CohortDistributionDataService/
+      - BsSelectRequestAuditDataService=${BS_REQUEST_AUDIT_DATA_SERVICE_API_BASE_URL}BsSelectRequestAuditDataService/
       - AcceptableLatencyThresholdMs=500
       - RetrieveSupersededRecordsLast=false
 
@@ -64,10 +64,10 @@ services:
       - 7086:7086
     environment:
       - ASPNETCORE_URLS=http://*:7086
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
-      - CohortDistributionDataServiceURL=http://cohort-distribution-data-service:7992/api/CohortDistributionDataService/
-      - BsSelectRequestAuditDataService=http://bs-request-audit-data-service:7989/api/BsSelectRequestAuditDataService/
-      - ExceptionFunctionURL=http://create-exception:7070/api/CreateException
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
+      - CohortDistributionDataServiceURL=${COHORT_DISTRIBUTION_DATA_SERVICE_API_BASE_URL}CohortDistributionDataService/
+      - BsSelectRequestAuditDataService=${BS_REQUEST_AUDIT_DATA_SERVICE_API_BASE_URL}BsSelectRequestAuditDataService/
+      - ExceptionFunctionURL=${CREATE_EXCEPTION_API_BASE_URL}CreateException
 
   transform-data-service:
     container_name: transform-data-service
@@ -80,13 +80,13 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
       - ASPNETCORE_URLS=http://*:7080
-      - ExceptionFunctionURL=http://create-exception:7070/api/CreateException
-      - BsSelectOutCodeUrl=http://reference-data-service:7988/api/BsSelectOutCode
-      - BsSelectGpPracticeUrl=http://reference-data-service:7988/api/BsSelectGpPractice
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
-      - LanguageCodeUrl=http://reference-data-service:7988/api/LanguageCode
-      - CurrentPostingUrl=http://reference-data-service:7988/api/CurrentPosting
-      - ExcludedSMULookupUrl=http://reference-data-service:7988/api/ExcludedSMU
+      - ExceptionFunctionURL=${CREATE_EXCEPTION_API_BASE_URL}CreateException
+      - BsSelectOutCodeUrl=${REFERENCE_DATA_SERVICE_API_BASE_URL}BsSelectOutCode
+      - BsSelectGpPracticeUrl=${REFERENCE_DATA_SERVICE_API_BASE_URL}BsSelectGpPractice
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
+      - LanguageCodeUrl=${REFERENCE_DATA_SERVICE_API_BASE_URL}LanguageCode
+      - CurrentPostingUrl=${REFERENCE_DATA_SERVICE_API_BASE_URL}CurrentPosting
+      - ExcludedSMULookupUrl=${REFERENCE_DATA_SERVICE_API_BASE_URL}ExcludedSMU
       - AcceptableLatencyThresholdMs=500
 
   remove-validation-exception-data:
@@ -100,11 +100,11 @@ services:
         BASE_IMAGE: ${FUNCTION_BASE_IMAGE}
     environment:
       - ASPNETCORE_URLS=http://*:7085
-      - ExceptionFunctionURL=http://create-exception:7070/api/CreateException
-      - ExceptionManagementDataServiceURL=http://exception-management-data-service:7911/api/ExceptionManagementDataService
-      - DemographicDataServiceURL=http://participant-demographic-data-service:7993/api/ParticipantDemographicDataService/
-      - GPPracticeDataServiceURL=http://gppractice-data-service:7999/api/GPPracticeDataService/
-      - DtOsDatabaseConnectionString=Server=db,1433;Database=${DB_NAME};User Id=SA;Password=${PASSWORD};TrustServerCertificate=True
+      - ExceptionFunctionURL=${CREATE_EXCEPTION_API_BASE_URL}CreateException
+      - ExceptionManagementDataServiceURL=${EXCEPTION_MANAGEMENT_DATA_SERVICE_API_BASE_URL}ExceptionManagementDataService
+      - DemographicDataServiceURL=${PARTICIPANT_DEMOGRAPHIC_DATA_SERVICE_API_BASE_URL}ParticipantDemographicDataService/
+      - GPPracticeDataServiceURL=${GP_PRACTICE_DATA_SERVICE_API_BASE_URL}GPPracticeDataService/
+      - DtOsDatabaseConnectionString=${DTOS_DATABASE_CONNECTION_STRING}
 
 
 networks:
