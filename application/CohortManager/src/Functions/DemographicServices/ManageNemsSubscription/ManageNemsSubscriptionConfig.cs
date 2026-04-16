@@ -13,35 +13,35 @@ public class ManageNemsSubscriptionConfig
     /// Production: Contact NHS Digital for production URLs
     /// </summary>
     [Required(ErrorMessage = "NemsFhirEndpoint is required")]
-    public string NemsFhirEndpoint { get; set; } = string.Empty;
+    public required string NemsFhirEndpoint { get; set; }
 
     /// <summary>
     /// Your organization's ASID (Application Service Instance Identifier)
     /// Example: "200000002527"
     /// </summary>
     [Required(ErrorMessage = "NemsFromAsid is required")]
-    public string NemsFromAsid { get; set; } = string.Empty;
+    public required string NemsFromAsid { get; set; }
 
     /// <summary>
     /// Target ASID (usually same as FromAsid for NEMS)
     /// Example: "200000002527"
     /// </summary>
     [Required(ErrorMessage = "NemsToAsid is required")]
-    public string NemsToAsid { get; set; } = string.Empty;
+    public required string NemsToAsid { get; set; }
 
     /// <summary>
     /// Your organization's ODS code
     /// Example: "T8T9T"
     /// </summary>
     [Required(ErrorMessage = "NemsOdsCode is required")]
-    public string NemsOdsCode { get; set; } = string.Empty;
+    public required string NemsOdsCode { get; set; }
 
     /// <summary>
     /// Your MESH mailbox ID (CRITICAL: Use full mailbox ID, not just ODS code)
     /// Example: "T8T9TOT001" (NOT just "T8T9T")
     /// </summary>
     [Required(ErrorMessage = "NemsMeshMailboxId is required")]
-    public string NemsMeshMailboxId { get; set; } = string.Empty;
+    public required string NemsMeshMailboxId { get; set; }
 
     /// <summary>
     /// Azure Key Vault connection string for certificate storage

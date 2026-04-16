@@ -40,7 +40,8 @@ public class ReceiveServiceNowMessageFunctionTests
             ServiceNowClientSecret = "ABC",
             ServiceNowRefreshToken = "DEF",
             ServiceBusConnectionString_client_internal = "Endpoint=",
-            ServiceNowParticipantManagementTopic = "servicenow-participant-management-topic"
+            ServiceNowParticipantManagementTopic = "servicenow-participant-management-topic",
+            ServiceNowAssignmentGroup = "ITO Breast Screening 2nd Line"
         });
         _function = new ReceiveServiceNowMessageFunction(_mockLogger.Object, _createResponse, _mockQueueClient.Object, _mockConfig.Object, _mockServiceNowCasesClient.Object, _mockServiceNowClient.Object);
         _mockHttpRequest = new Mock<HttpRequestData>(_mockContext.Object);
