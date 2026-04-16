@@ -41,7 +41,8 @@ public class ServiceNowClientTests
             ServiceNowClientSecret = "ABC",
             ServiceNowRefreshToken = "DEF",
             ServiceBusConnectionString_client_internal = "Endpoint=",
-            ServiceNowParticipantManagementTopic = "servicenow-participant-management-topic"
+            ServiceNowParticipantManagementTopic = "servicenow-participant-management-topic",
+            ServiceNowAssignmentGroup = "ITO Breast Screening 2nd Line"
         });
         _cache = new MemoryCache(new MemoryCacheOptions());
         _serviceNowClient = new ServiceNowClient(

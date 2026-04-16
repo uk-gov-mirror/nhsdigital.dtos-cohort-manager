@@ -27,5 +27,5 @@ public class ServiceNowMessageHandlerConfig
     [Required]
     public required string ServiceNowParticipantManagementTopic { get; set; }
     [Required]
-    public string ServiceNowAssignmentGroup { get; set; } = "ITO Breast Screening 2nd Line";
+    public required string ServiceNowAssignmentGroup { get; set; } = "ITO Breast Screening 2nd Line";
 }
