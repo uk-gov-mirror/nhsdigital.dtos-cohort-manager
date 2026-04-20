@@ -15,25 +15,57 @@ public class HealthCheckFilterTelemetryProcessor : ITelemetryProcessor
 
     public void Process(ITelemetry item)
     {
-        if (item is RequestTelemetry request &&
-            request.Url.AbsolutePath.Contains("/health", StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        if (item is DependencyTelemetry dependency &&
-            dependency.Data?.Contains("/health") == true)
-        {
-            return;
-        }
-
-        if (item is TraceTelemetry trace &&
-            trace.Properties.TryGetValue("CategoryName", out var categoryName) &&
-            categoryName.Contains("Health", StringComparison.OrdinalIgnoreCase))
+        if (IsHealthCheckTelemetry(item) && !IsException(item))
         {
             return;
         }
 
         _next.Process(item);
+    }
+
+    private static bool IsHealthCheckTelemetry(ITelemetry item)
+    {
+        if (item is RequestTelemetry request)
+        {
+            return request.Name?.Equals("health", StringComparison.OrdinalIgnoreCase) == true ||
+                   request.Url?.AbsolutePath.Contains("/health", StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        if (item is DependencyTelemetry dependency)
+        {
+            return dependency.Data?.Contains("/health", StringComparison.OrdinalIgnoreCase) == true ||
+                   dependency.Name?.Contains("health", StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        if (item is TraceTelemetry trace)
+        {
+            if (trace.Message?.Contains("Functions.health", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                return true;
+            }
+
+            if (trace.Properties.TryGetValue("CategoryName", out var categoryName) &&
+                categoryName.Contains("Health", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsException(ITelemetry item)
+    {
+        if (item is RequestTelemetry request)
+        {
+            return !request.Success.GetValueOrDefault(true);
+        }
+
+        if (item is TraceTelemetry trace)
+        {
+            return trace.SeverityLevel >= SeverityLevel.Error;
+        }
+
+        return item is ExceptionTelemetry;
     }
 }

@@ -19,7 +19,8 @@
     },
     "logLevel": {
       "HealthChecks": "Error",
-      "HealthChecks.Extensions": "Error"
+      "HealthChecks.Extensions": "Error",
+      "Function.health": "Error"
     }
   }
 }

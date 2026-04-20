@@ -7,11 +7,12 @@
         "isEnabled": true,
         "excludedTypes": "Request"
       },
-      "enableLiveMetricsFilters": true,
-      "logLevel": {
-        "HealthChecks": "Error",
-        "HealthChecks.Extensions": "Error"
-      }
+      "enableLiveMetricsFilters": true
+    },
+    "logLevel": {
+      "HealthChecks": "Error",
+      "HealthChecks.Extensions": "Error",
+      "Function.health": "Error"
     }
   },
   "concurrency": {

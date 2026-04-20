@@ -16,7 +16,8 @@
       "Host.Results": "Information",
       "DataServices.Client": "Information",
       "HealthChecks": "Error",
-      "HealthChecks.Extensions": "Error"
+      "HealthChecks.Extensions": "Error",
+      "Function.health": "Error"
     }
   }
 }
