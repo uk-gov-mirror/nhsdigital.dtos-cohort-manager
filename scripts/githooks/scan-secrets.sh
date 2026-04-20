@@ -60,9 +60,13 @@ function get-cmd-to-run() {
     "staged-changes")
       cmd="protect --source $dir --verbose --staged"
       ;;
+    *)
+    echo "Unexpected value for 'check' variable: $check"
+    exit 126 # Unknown flag exit code
+      ;;
   esac
   # Include base line file if it exists
-  if [ -f "$dir/scripts/config/.gitleaks-baseline.json" ]; then
+  if [[ -f "$dir/scripts/config/.gitleaks-baseline.json" ]]; then
     cmd="$cmd --baseline-path $dir/scripts/config/.gitleaks-baseline.json"
   fi
   # Include the config file
