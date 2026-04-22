@@ -27,6 +27,12 @@ public class HealthCheckFilterTelemetryProcessor : ITelemetryProcessor
     {
         if (item is RequestTelemetry request)
         {
+            if (request.Properties.TryGetValue("FullName", out var fullName) &&
+                fullName.Equals("Functions.health", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
             return request.Name?.Equals("health", StringComparison.OrdinalIgnoreCase) == true ||
                    request.Url?.AbsolutePath.Contains("/health", StringComparison.OrdinalIgnoreCase) == true;
         }
