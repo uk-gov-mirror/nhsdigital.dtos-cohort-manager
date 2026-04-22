@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Breadcrumb from "@/app/components/breadcrumb";
 import RemoveDummyGpCodeForm from "@/app/components/removeDummyGpCodeForm";
+import { auth } from "@/app/lib/auth";
+import { checkAccessToRemoveDummyGpCode } from "@/app/lib/checkAccess";
 
 export const metadata: Metadata = {
   title: `Remove Dummy GP Code - ${process.env.SERVICE_NAME} - NHS`,
@@ -11,6 +14,13 @@ export default async function Page(props: {
     readonly success?: string;
   }>;
 }) {
+  const session = await auth();
+  const isDummyGpCodeUser = await checkAccessToRemoveDummyGpCode(session?.user.workgroups_codes || []);
+
+  if (!isDummyGpCodeUser) {
+    redirect("/");
+  }
+
   const resolvedSearchParams = props.searchParams
     ? await props.searchParams
     : {};
