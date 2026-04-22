@@ -1,6 +1,8 @@
 import { Suspense } from "react";
+import { auth } from "@/app/lib/auth";
 import CardGroup from "@/app/components/cardGroup";
 import OverviewData from "@/app/components/overviewData";
+import { checkAccessToRemoveDummyGpCode } from "../lib/checkAccess";
 
 const skeletonExceptionItems = [
   {
@@ -34,7 +36,9 @@ const dummyGpCodeItems = [
   },
 ];
 
-export default function Overview() {
+export default async function Overview() {
+  const session = await auth();
+  const isDummyGpCodeUser = await checkAccessToRemoveDummyGpCode(session?.user.workgroups_codes || []);
   return (
     <main className="nhsuk-main-wrapper" id="maincontent" role="main">
       <div className="nhsuk-grid-row">
@@ -46,8 +50,12 @@ export default function Overview() {
           </Suspense>
           <h2>Reports</h2>
           <CardGroup items={reportItems} />
-          <h2>Dummy GP Code</h2>
-          <CardGroup items={dummyGpCodeItems} />
+          {isDummyGpCodeUser && (
+            <>
+              <h2>Dummy GP Code</h2>
+              <CardGroup items={dummyGpCodeItems} />
+            </>
+          )}
         </div>
       </div>
     </main>
