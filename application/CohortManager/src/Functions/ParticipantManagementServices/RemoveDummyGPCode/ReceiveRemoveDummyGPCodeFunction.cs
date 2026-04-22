@@ -44,6 +44,7 @@ public class ReceiveRemoveDummyGpCodeFunction
     /// Validates and enqueues a dummy GP code removal request to the ServiceNow participant management topic.
     /// </summary>
     [Function("ReceiveRemoveDummyGPCodeFunction")]
+    [Authentication(Role.CohortManagerDummyGpRemoval)]
     public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "RemoveDummyGPCode")] HttpRequestData req)
     {
         try

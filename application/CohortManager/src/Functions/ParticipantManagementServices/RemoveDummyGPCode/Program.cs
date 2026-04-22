@@ -6,12 +6,13 @@ using NHS.CohortManager.ParticipantManagementServices;
 
 var host = new HostBuilder()
     .AddConfiguration(out RemoveDummyGpCodeConfig config)
-    .ConfigureFunctionsWorkerDefaults()
+    .AddAuthentication()
     .ConfigureServices(services =>
     {
         services.AddSingleton<ICreateResponse, CreateResponse>();
         services.AddBasicHealthCheck("RemoveDummyGPCode");
     })
+
     .AddTelemetry()
     .AddHttpClient()
     .AddServiceBusClient(config.ServiceBusConnectionString_client_internal)
