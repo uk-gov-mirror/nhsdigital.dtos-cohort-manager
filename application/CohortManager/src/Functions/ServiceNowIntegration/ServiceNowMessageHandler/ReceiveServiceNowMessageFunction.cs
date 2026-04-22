@@ -12,6 +12,7 @@ using NHS.CohortManager.ServiceNowIntegrationService.Models;
 using Model;
 using Microsoft.Extensions.Options;
 using DataServices.Client;
+using Model.Enums;
 
 public class ReceiveServiceNowMessageFunction
 {
@@ -104,7 +105,7 @@ public class ReceiveServiceNowMessageFunction
 
             var participant = new ServiceNowParticipant
             {
-                ScreeningId = 1, // Hardcoding to the Breast Screening Id
+                ScreeningId = (int)ServiceProvider.BSS,
                 NhsNumber = nhsNumber,
                 FirstName = requestBody.VariableData.FirstName,
                 FamilyName = requestBody.VariableData.FamilyName,
@@ -122,6 +123,7 @@ public class ReceiveServiceNowMessageFunction
                 _logger.LogError("Failed to send Participant from ServiceNow to Service Bus Topic. CaseNumber: {CaseNumber}", requestBody.ServiceNowCaseNumber);
                 return _createResponse.CreateHttpResponse(HttpStatusCode.InternalServerError, req);
             }
+
         }
         catch (JsonException ex)
         {

@@ -19,9 +19,7 @@ public class DurableDemographicFunction
     private readonly IDataServiceClient<ParticipantDemographic> _participantDemographic;
     private readonly ILogger<DurableDemographicFunction> _logger;
     private readonly ICreateResponse _createResponse;
-
     private readonly DemographicDurableFunctionConfig _config;
-
 
     public DurableDemographicFunction(IDataServiceClient<ParticipantDemographic> dataServiceClient, ILogger<DurableDemographicFunction> logger, ICreateResponse createResponse, IOptions<DemographicDurableFunctionConfig> demographicDurableFunctionConfig)
     {

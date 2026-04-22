@@ -35,4 +35,15 @@ public class AzureStorageQueueClient : IQueueClient
             return false;
         }
     }
+
+    public async Task<int> AddBatchAsync<T>(IEnumerable<T> messages, string queueName)
+    {
+        var failCount = 0;
+        foreach (var message in messages)
+        {
+            if (!await AddAsync(message, queueName))
+                failCount++;
+        }
+        return failCount;
+    }
 }

@@ -21,6 +21,7 @@ public class DataServicesContext : DbContext
     DbSet<GenderMaster> genderMasters { get; set; }
     DbSet<NemsSubscription> nemsSubscriptions { get; set; }
     DbSet<ServicenowCase> servicenowCases { get; set; }
+    public DbSet<ParticipantAuditLog> participantAuditLogs { get; set; }
 
     public DataServicesContext(DbContextOptions<DataServicesContext> options) : base(options)
     { }
@@ -68,7 +69,7 @@ public class DataServicesContext : DbContext
             .HasIndex(c => new { c.NHSNumber }, "IX_BS_COHORT_DISTRIBUTION_NHSNUMBER");
 
         modelBuilder.Entity<CohortDistribution>()
-            .HasIndex(i => new { i.ParticipantId },"IX_BS_COHORT_DISTRIBUTION_PARTICIPANTID");
+            .HasIndex(i => new { i.ParticipantId }, "IX_BS_COHORT_DISTRIBUTION_PARTICIPANTID");
 
         modelBuilder.Entity<CohortDistribution>()
             .HasIndex(c => new { c.IsExtracted, c.RequestId }, "IX_BSCOHORT_IS_EXTACTED_REQUESTID");
@@ -91,5 +92,8 @@ public class DataServicesContext : DbContext
         modelBuilder.Entity<ServicenowCase>()
             .ToTable("SERVICENOW_CASES", "dbo")
             .HasIndex(s => s.ServicenowId, "IX_SERVICENOW_CASES_SERVICENOW_ID");
+
+        modelBuilder.Entity<ParticipantAuditLog>()
+            .ToTable("PARTICIPANT_AUDIT_LOG", "dbo");
     }
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Header from "@/app/components/header";
 import Footer from "@/app/components/footer";
+import IdleLogout from "./components/sessionTracker";
 import "./globals.scss";
 
 export const metadata: Metadata = {
@@ -37,6 +38,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Header serviceName={serviceName} />
+        <IdleLogout />
         <div className="nhsuk-width-container">{children}</div>
         <Footer />
       </body>
