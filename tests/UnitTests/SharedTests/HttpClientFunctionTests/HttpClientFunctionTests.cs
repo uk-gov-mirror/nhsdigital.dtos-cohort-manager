@@ -55,6 +55,35 @@ public class HttpClientFunctionTests
     }
 
     [TestMethod]
+    public async Task Run_SendGet_WithSetBearerToken_AddsAuthorizationHeader()
+    {
+        // Arrange
+        _httpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == HttpMethod.Get
+                    && req.Headers.Any(h => h.Key == "Authorization" && h.Value.Single() == "Bearer some-auth-token")),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(_mockResponse);
+
+        var httpClient = new HttpClient(_httpMessageHandler.Object);
+        _factory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(httpClient);
+
+        _function = new HttpClientFunction(_logger.Object, _factory.Object);
+        _function.SetBearerToken("some-auth-token");
+
+        // Act
+        var result = await _function.SendGet(_mockUrl);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(_mockContent, result);
+    }
+
+    [TestMethod]
     public async Task Run_SendGetFails_LogsErrorWithoutNhsNumberAndThrowsException()
     {
         // Arrange

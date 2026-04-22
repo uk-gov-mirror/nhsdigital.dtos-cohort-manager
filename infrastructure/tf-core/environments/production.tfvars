@@ -596,6 +596,7 @@ function_apps = {
       function_endpoint_name = "GetValidationExceptions"
       app_service_plan_key   = "NonScaling"
       db_connection_string   = "DtOsDatabaseConnectionString"
+      key_vault_url          = "KeyVaultConnectionString"
       app_urls = [
         {
           env_var_name     = "DemographicDataServiceURL"
@@ -612,6 +613,7 @@ function_apps = {
       ]
       env_vars_static = {
         AcceptableLatencyThresholdMs = "500"
+        UserInfoUrl                  = "https://am.nhsidentity.spineservices.nhs.uk/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
       }
     }
 

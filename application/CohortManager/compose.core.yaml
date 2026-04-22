@@ -247,6 +247,9 @@ services:
       - ExceptionManagementDataServiceURL=http://exception-management-data-service:7911/api/ExceptionManagementDataService/
       - GPPracticeDataServiceURL=http://gppractice-data-service:7999/api/GPPracticeDataService/
       - AcceptableLatencyThresholdMs=500
+      - BypassAuthentication=true
+      - AuthClientId=MockClientId-123
+      - UserInfoUrl=http://wiremock:8080/userinfo
 
   # Screening Validation Service
   static-validation:
