@@ -27,3 +27,18 @@ resource "azapi_resource" "app_requests_workspace_transform" {
     }
   }
 }
+
+resource "azapi_update_resource" "law_default_dcr" {
+  count = var.law.app_requests_transform_enabled ? 1 : 0
+
+  type      = "Microsoft.OperationalInsights/workspaces@2023-09-01"
+  resource_id = module.log_analytics_workspace_audit[local.primary_region].id
+
+  body = {
+    properties = {
+      defaultDataCollectionRuleResourceId = azapi_resource.app_requests_workspace_transform[0].id
+    }
+  }
+
+  depends_on = [azapi_resource.app_requests_workspace_transform]
+}
