@@ -12,7 +12,7 @@ resource "azapi_resource" "app_requests_workspace_transform" {
       destinations = {
         logAnalytics = [
           {
-            workspaceResourceId = module.log_analytics_workspace_audit[local_primary_region].id
+            workspaceResourceId = module.log_analytics_workspace_audit[local.primary_region].id
             name                = "workspace"
           }
         ]
