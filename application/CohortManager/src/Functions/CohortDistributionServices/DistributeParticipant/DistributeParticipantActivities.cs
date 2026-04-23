@@ -80,13 +80,14 @@ public class DistributeParticipantActivities
     /// <param name="participant"></param>
     /// <returns>A string representing the service provider</returns>
     [Function(nameof(AllocateServiceProvider))]
-    public async Task<string> AllocateServiceProvider([ActivityTrigger] Participant participant)
+    public async Task<string> AllocateServiceProvider([ActivityTrigger] CohortDistributionParticipant participant)
     {
         if (string.IsNullOrEmpty(participant.Postcode) || string.IsNullOrEmpty(participant.ScreeningAcronym))
         {
             return EnumHelper.GetDisplayName(ServiceProvider.BSS);
         }
 
+        //TODO: This should be pre-cached rather than read from file every time. This is fine for now as the file is small and this function is not called frequently, but if this becomes a bottleneck we should look at caching the config data in memory and refreshing it periodically instead of reading from file on every function call.
         string configFilePath = Path.Combine(Environment.CurrentDirectory, "AllocateServiceProvider", "allocationConfig.json");
         string configFile = await File.ReadAllTextAsync(configFilePath);
 
