@@ -17,13 +17,15 @@ public class DistributeParticipantActivities
     private readonly DistributeParticipantConfig _config;
     private readonly ILogger<DistributeParticipantActivities> _logger;
     private readonly IHttpClientFunction _httpClientFunction;
+    private readonly IAllocationConfigProvider _allocationConfigProvider;
 
     public DistributeParticipantActivities(IDataServiceClient<CohortDistribution> cohortDistributionClient,
                                            IDataServiceClient<ParticipantManagement> participantManagementClient,
                                            IDataServiceClient<ParticipantDemographic> participantDemographicClient,
                                            IOptions<DistributeParticipantConfig> config,
                                            ILogger<DistributeParticipantActivities> logger,
-                                           IHttpClientFunction httpClientFunction)
+                                           IHttpClientFunction httpClientFunction,
+                                           IAllocationConfigProvider allocationConfigProvider)
     {
         _cohortDistributionClient = cohortDistributionClient;
         _participantManagementClient = participantManagementClient;
@@ -31,6 +33,7 @@ public class DistributeParticipantActivities
         _config = config.Value;
         _logger = logger;
         _httpClientFunction = httpClientFunction;
+        _allocationConfigProvider = allocationConfigProvider;
     }
 
     /// <summary>
@@ -87,10 +90,7 @@ public class DistributeParticipantActivities
             return EnumHelper.GetDisplayName(ServiceProvider.BSS);
         }
 
-        string configFilePath = Path.Combine(Environment.CurrentDirectory, "AllocateServiceProvider", "allocationConfig.json");
-        string configFile = await File.ReadAllTextAsync(configFilePath);
-
-        var allocationConfigEntries = JsonSerializer.Deserialize<AllocationConfigDataList>(configFile);
+        var allocationConfigEntries = await _allocationConfigProvider.GetConfigAsync();
 
         string serviceProvider = allocationConfigEntries.ConfigDataList
             .Where(item => participant.Postcode.StartsWith(item.Postcode, StringComparison.OrdinalIgnoreCase) &&
