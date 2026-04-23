@@ -4,6 +4,7 @@ using System.Net;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -13,15 +14,13 @@ public class Cis2AuthMiddleware : IFunctionsWorkerMiddleware
     private readonly ILogger<Cis2AuthMiddleware> _logger;
     private readonly ICreateResponse _createResponse;
     private readonly IAuthenticationService _authService;
-    private readonly ICis2UserService _cis2UserService;
     private readonly AuthConfig _authConfig;
 
-    public Cis2AuthMiddleware(ILogger<Cis2AuthMiddleware> logger, ICreateResponse createResponse, IAuthenticationService authService, ICis2UserService cis2UserService, IOptions<AuthConfig> authConfig)
+    public Cis2AuthMiddleware(ILogger<Cis2AuthMiddleware> logger, ICreateResponse createResponse, IAuthenticationService authService, IOptions<AuthConfig> authConfig)
     {
         _logger = logger;
         _createResponse = createResponse;
         _authService = authService;
-        _cis2UserService = cis2UserService;
         _authConfig = authConfig.Value;
     }
 
@@ -33,6 +32,8 @@ public class Cis2AuthMiddleware : IFunctionsWorkerMiddleware
             await next(context);
             return;
         }
+
+        var cis2UserService = context.InstanceServices.GetRequiredService<ICis2UserService>();
 
         var req = await context.GetHttpRequestDataAsync();
 
@@ -59,7 +60,7 @@ public class Cis2AuthMiddleware : IFunctionsWorkerMiddleware
             return;
         }
 
-        var cis2User = await _cis2UserService.GetUserFromToken(accessToken);
+        var cis2User = await cis2UserService.GetUserFromToken(accessToken);
         if(cis2User == null)
         {
             await HandleUnauthorizedAsync(context, req!, "Failed to retrieve user from token", "Unauthorized: Failed to retrieve user from token.");
