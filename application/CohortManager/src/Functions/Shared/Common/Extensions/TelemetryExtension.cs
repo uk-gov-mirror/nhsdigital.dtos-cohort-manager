@@ -9,15 +9,15 @@ public static class TelemetryExtension
 {
     public static IHostBuilder AddTelemetry(this IHostBuilder hostBuilder)
     {
-        return hostBuilder.ConfigureServices(_ =>
+        return hostBuilder.ConfigureServices(sc =>
         {
-            _.AddApplicationInsightsTelemetryWorkerService();
-            _.ConfigureFunctionsApplicationInsights();
-            _.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, o) =>
+            sc.AddApplicationInsightsTelemetryWorkerService();
+            sc.ConfigureFunctionsApplicationInsights();
+            sc.ConfigureTelemetryModule<DependencyTrackingTelemetryModule>((module, o) =>
                 {
                     module.SetComponentCorrelationHttpHeaders = true;
                 });
-            _.AddApplicationInsightsTelemetryProcessor<HealthCheckFilterTelemetryProcessor>();
+            sc.AddApplicationInsightsTelemetryProcessor<HealthCheckFilterTelemetryProcessor>();
         });
     }
 

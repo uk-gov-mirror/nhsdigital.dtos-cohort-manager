@@ -40,10 +40,11 @@ app_insights = {
 }
 
 law = {
-  law_sku            = "PerGB2018"
-  retention_days     = 30
-  export_enabled     = false
-  export_table_names = ["Alert"]
+  law_sku                        = "PerGB2018"
+  retention_days                 = 30
+  export_enabled                 = false
+  export_table_names             = ["Alert"]
+  app_requests_transform_enabled = true
 }
 
 storage_accounts = {
@@ -71,7 +72,7 @@ storage_accounts = {
     access_tier                             = "Cold"
     containers = {
       sql-backups-immutable = {
-        container_name        = "sql-backups-immutable"
+        container_name        = "sql-back-ups-immutable"
         container_access_type = "private"
         immutability_policy = {
           is_locked                           = false
