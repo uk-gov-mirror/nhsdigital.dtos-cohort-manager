@@ -4,14 +4,6 @@ using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 
-/// <summary>
-/// Filters health check telemetry emitted by the worker process.
-/// Note: In the isolated worker model, RequestTelemetry for HTTP triggers is emitted
-/// by the host process and does not flow through this processor.
-/// Host-emitted request telemetry cannot be filtered here — see
-/// https://github.com/Azure/azure-functions-dotnet-worker/issues/2024
-/// Trace telemetry is filtered via host.json logLevel settings.
-/// </summary>
 public class HealthCheckFilterTelemetryProcessor : ITelemetryProcessor, ITelemetryInitializer
 {
     private readonly ITelemetryProcessor _next;
