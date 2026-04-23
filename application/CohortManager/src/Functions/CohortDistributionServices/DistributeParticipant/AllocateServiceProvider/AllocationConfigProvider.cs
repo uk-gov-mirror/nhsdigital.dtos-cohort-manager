@@ -6,24 +6,20 @@ using Microsoft.Extensions.Logging;
 /// <summary>
 /// Provides cached access to the allocation config data.
 /// Registered as a singleton so the file is read once and reused across calls.
+/// Config is loaded eagerly in the constructor, making the instance immutable and inherently thread-safe.
 /// </summary>
-public class AllocationConfigProvider(ILogger<AllocationConfigProvider> logger) : IAllocationConfigProvider
+public class AllocationConfigProvider : IAllocationConfigProvider
 {
-    private AllocationConfigDataList? _cachedConfig;
-    private readonly ILogger<AllocationConfigProvider> _logger = logger;
+    private readonly AllocationConfigDataList _cachedConfig;
 
-    public async Task<AllocationConfigDataList> GetConfigAsync()
+    public AllocationConfigProvider(ILogger<AllocationConfigProvider> logger)
     {
-        if (_cachedConfig is not null)
-        {
-            return _cachedConfig;
-        }
-
         var configFilePath = Path.Combine(Environment.CurrentDirectory, "AllocateServiceProvider", "allocationConfig.json");
-        var configFile = await File.ReadAllTextAsync(configFilePath);
-        _cachedConfig = JsonSerializer.Deserialize<AllocationConfigDataList>(configFile) ?? throw new InvalidOperationException($"Allocation config file '{configFilePath}' contained null or invalid configuration data.");
-        _logger.LogInformation("Allocation config loaded from file and cached");
-
-        return _cachedConfig;
+        var configFile = File.ReadAllText(configFilePath);
+        _cachedConfig = JsonSerializer.Deserialize<AllocationConfigDataList>(configFile)
+            ?? throw new InvalidOperationException($"Failed to deserialize allocation config from '{configFilePath}'. The file content was null or invalid.");
+        logger.LogInformation("Allocation config loaded from file and cached");
     }
+    
+    public AllocationConfigDataList GetConfig() => _cachedConfig;
 }

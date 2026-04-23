@@ -90,7 +90,7 @@ public class DistributeParticipantActivities
             return EnumHelper.GetDisplayName(ServiceProvider.BSS);
         }
 
-        var allocationConfigEntries = await _allocationConfigProvider.GetConfigAsync();
+        var allocationConfigEntries = _allocationConfigProvider.GetConfig();
 
         string serviceProvider = allocationConfigEntries.ConfigDataList
             .Where(item => participant.Postcode.StartsWith(item.Postcode, StringComparison.OrdinalIgnoreCase) &&

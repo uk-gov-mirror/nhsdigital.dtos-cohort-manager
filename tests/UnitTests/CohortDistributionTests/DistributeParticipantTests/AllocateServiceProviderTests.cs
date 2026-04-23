@@ -114,7 +114,7 @@ public class AllocateServiceProviderTests
                 new AllocationConfigData { Postcode = "AB", ScreeningService = "BSS", ServiceProvider = "TestServiceProvider" }
             ]
         };
-        _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
+        _allocationConfigProvider.Setup(x => x.GetConfig()).Returns(configData);
 
         // Act
         var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
@@ -135,7 +135,7 @@ public class AllocateServiceProviderTests
                 new AllocationConfigData { Postcode = "AB", ScreeningService = "BSS", ServiceProvider = "TestServiceProvider" }
             ]
         };
-        _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
+        _allocationConfigProvider.Setup(x => x.GetConfig()).Returns(configData);
 
         // Act
         var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
@@ -156,7 +156,7 @@ public class AllocateServiceProviderTests
                 new AllocationConfigData { Postcode = "AB", ScreeningService = "BSS", ServiceProvider = "TestServiceProvider" }
             ]
         };
-        _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
+        _allocationConfigProvider.Setup(x => x.GetConfig()).Returns(configData);
 
         // Act
         var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
@@ -179,7 +179,7 @@ public class AllocateServiceProviderTests
                 new AllocationConfigData { Postcode = "AB1", ScreeningService = "BSS", ServiceProvider = "Longest Match" }
             ]
         };
-        _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
+        _allocationConfigProvider.Setup(x => x.GetConfig()).Returns(configData);
 
         // Act
         var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
@@ -200,7 +200,7 @@ public class AllocateServiceProviderTests
                 new AllocationConfigData { Postcode = "AB", ScreeningService = "BSS", ServiceProvider = "TestServiceProvider" }
             ]
         };
-        _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
+        _allocationConfigProvider.Setup(x => x.GetConfig()).Returns(configData);
 
         // Act
         var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
@@ -221,7 +221,7 @@ public class AllocateServiceProviderTests
                 new AllocationConfigData { Postcode = "AB", ScreeningService = "BSS", ServiceProvider = "TestServiceProvider" }
             ]
         };
-        _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
+        _allocationConfigProvider.Setup(x => x.GetConfig()).Returns(configData);
 
         // Act
         var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
@@ -236,7 +236,7 @@ public class AllocateServiceProviderTests
         // Arrange
         var participant = new CohortDistributionParticipant { Postcode = "AB1 2CD", ScreeningAcronym = "BSS" };
         var configData = new AllocationConfigDataList { ConfigDataList = [] };
-        _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
+        _allocationConfigProvider.Setup(x => x.GetConfig()).Returns(configData);
 
         // Act
         var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
