@@ -44,7 +44,7 @@ law = {
   retention_days                 = 30
   export_enabled                 = false
   export_table_names             = ["Alert"]
-  app_requests_transform_enabled = true
+  app_requests_transform_enabled = false
 }
 
 storage_accounts = {
