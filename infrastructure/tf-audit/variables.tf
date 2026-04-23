@@ -84,7 +84,7 @@ variable "law" {
     retention_days                 = optional(number, 30)
     export_enabled                 = optional(bool, false)
     export_table_names             = optional(list(string), [])
-    app_requests_transform_enabled = optional(bool, false)
+    app_requests_transform_enabled = optional(bool, true)
     app_requests_transform_kql     = optional(string, "source | where not(tolower(Name) == \"health\" and tostring(Url) endswith \"/api/health\" and tostring(Properties[\"Category\"]) == \"Host.Results\")")
   })
 }
