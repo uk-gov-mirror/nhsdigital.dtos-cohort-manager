@@ -83,7 +83,7 @@ public class DistributeParticipantActivities
     /// <param name="participant"></param>
     /// <returns>A string representing the service provider</returns>
     [Function(nameof(AllocateServiceProvider))]
-    public async Task<string> AllocateServiceProvider([ActivityTrigger] Participant participant)
+    public async Task<string> AllocateServiceProvider([ActivityTrigger] CohortDistributionParticipant participant)
     {
         if (string.IsNullOrEmpty(participant.Postcode) || string.IsNullOrEmpty(participant.ScreeningAcronym))
         {
