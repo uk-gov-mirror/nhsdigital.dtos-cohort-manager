@@ -6,7 +6,8 @@ using Microsoft.Extensions.Logging;
 /// <summary>
 /// Provides cached access to the allocation config data.
 /// Registered as a singleton so the file is read once and reused across calls.
-/// Config is loaded eagerly in the constructor, making the instance immutable and inherently thread-safe.
+/// Config is loaded eagerly in the constructor and the provider does not mutate it after creation.
+/// Callers receive the cached instance returned by reference, so this type does not guarantee that the config object itself is immutable.
 /// </summary>
 public class AllocationConfigProvider : IAllocationConfigProvider
 {
