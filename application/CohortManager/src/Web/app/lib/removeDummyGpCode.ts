@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { auth } from "@/app/lib/auth";
 import { removeDummyGpCodeSchema } from "@/app/lib/formValidationSchemas";
 
 export type RemoveDummyGpCodeState = {
@@ -68,14 +69,24 @@ export async function removeDummyGpCode(
   }
 
   const apiUrl = `${process.env.REMOVE_DUMMY_GP_CODE_API_URL}/api/RemoveDummyGPCode`;
+  const session = await auth();
+  const bearerToken = session?.idToken;
+  const accessToken = session?.accessToken;
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (bearerToken && accessToken) {
+    headers.Authorization = `Bearer ${bearerToken}`;
+    headers["X-Access-Token"] = `Bearer ${accessToken}`;
+  }
 
   let response: Response;
   try {
     response = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({
         nhs_number: parsedData.data.nhsNumber,
         forename: parsedData.data.forename,
