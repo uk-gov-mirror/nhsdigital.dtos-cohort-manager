@@ -21,7 +21,7 @@ public class AllocationConfigProvider(ILogger<AllocationConfigProvider> logger) 
 
         var configFilePath = Path.Combine(Environment.CurrentDirectory, "AllocateServiceProvider", "allocationConfig.json");
         var configFile = await File.ReadAllTextAsync(configFilePath);
-        _cachedConfig = JsonSerializer.Deserialize<AllocationConfigDataList>(configFile)!;
+        _cachedConfig = JsonSerializer.Deserialize<AllocationConfigDataList>(configFile) ?? throw new InvalidOperationException($"Allocation config file '{configFilePath}' contained null or invalid configuration data.");
         _logger.LogInformation("Allocation config loaded from file and cached");
 
         return _cachedConfig;
