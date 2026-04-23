@@ -12,7 +12,7 @@ using Common;
 [TestClass]
 public class AllocateServiceProviderTests
 {
-    private readonly DistributeParticipantActivities _DistributionParticipantActivities;
+    private readonly DistributeParticipantActivities _distributionParticipantActivities;
     private readonly Mock<IAllocationConfigProvider> _allocationConfigProvider = new();
     private readonly Mock<IDataServiceClient<CohortDistribution>> _cohortDistributionClient = new();
     private readonly Mock<IDataServiceClient<ParticipantManagement>> _participantManagementClient = new();
@@ -38,7 +38,7 @@ public class AllocateServiceProviderTests
 
         _config.Setup(x => x.Value).Returns(config);
 
-        _DistributionParticipantActivities = new(
+        _distributionParticipantActivities = new(
             _cohortDistributionClient.Object,
             _participantManagementClient.Object,
             _participantDemographicClient.Object,
@@ -57,7 +57,7 @@ public class AllocateServiceProviderTests
         var participant = new CohortDistributionParticipant { Postcode = null, ScreeningAcronym = "BSS" };
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual(EnumHelper.GetDisplayName(ServiceProvider.BSS), result);
@@ -70,7 +70,7 @@ public class AllocateServiceProviderTests
         var participant = new CohortDistributionParticipant { Postcode = "", ScreeningAcronym = "BSS" };
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual(EnumHelper.GetDisplayName(ServiceProvider.BSS), result);
@@ -83,7 +83,7 @@ public class AllocateServiceProviderTests
         var participant = new CohortDistributionParticipant { Postcode = "AB1 2CD", ScreeningAcronym = null };
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual(EnumHelper.GetDisplayName(ServiceProvider.BSS), result);
@@ -96,7 +96,7 @@ public class AllocateServiceProviderTests
         var participant = new CohortDistributionParticipant { Postcode = "AB1 2CD", ScreeningAcronym = "" };
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual(EnumHelper.GetDisplayName(ServiceProvider.BSS), result);
@@ -117,7 +117,7 @@ public class AllocateServiceProviderTests
         _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual("TestServiceProvider", result);
@@ -138,7 +138,7 @@ public class AllocateServiceProviderTests
         _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual("BS SELECT", result);
@@ -159,7 +159,7 @@ public class AllocateServiceProviderTests
         _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual("BS SELECT", result);
@@ -182,7 +182,7 @@ public class AllocateServiceProviderTests
         _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual("Longest Match", result);
@@ -203,7 +203,7 @@ public class AllocateServiceProviderTests
         _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual("TestServiceProvider", result);
@@ -224,7 +224,7 @@ public class AllocateServiceProviderTests
         _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual("TestServiceProvider", result);
@@ -239,7 +239,7 @@ public class AllocateServiceProviderTests
         _allocationConfigProvider.Setup(x => x.GetConfigAsync()).ReturnsAsync(configData);
 
         // Act
-        var result = await _DistributionParticipantActivities.AllocateServiceProvider(participant);
+        var result = await _distributionParticipantActivities.AllocateServiceProvider(participant);
 
         // Assert
         Assert.AreEqual("BS SELECT", result);
