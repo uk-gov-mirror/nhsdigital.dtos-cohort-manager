@@ -529,6 +529,7 @@ function_apps = {
       function_endpoint_name  = "RemoveDummyGPCode"
       app_service_plan_key    = "NonScaling"
       service_bus_connections = ["internal"]
+      key_vault_url          = "KeyVaultConnectionString"
       app_urls = [
         {
           env_var_name     = "RetrievePdsDemographicURL"
@@ -537,6 +538,7 @@ function_apps = {
       ]
       env_vars_static = {
         ServiceNowParticipantManagementTopic = "servicenow-participant-management"
+        UserInfoUrl                          = "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
       }
     }
 
