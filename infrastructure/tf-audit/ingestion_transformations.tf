@@ -1,22 +1,30 @@
-resource "azurerm_monitor_data_collection_rule" "app_requests_workspace_transform" {
+resource "azapi_resource" "app_requests_workspace_transform" {
   count = var.law.app_requests_transform_enabled ? 1 : 0
 
-  name                = "${module.regions_config[local.primary_region].names.log-analytics-workspace}-apprequests-transform"
-  resource_group_name = azurerm_resource_group.audit[local.primary_region].name
-  location            = local.primary_region
-  kind                = "WorkspaceTransforms"
+  type      = "Microsoft.Insights/dataCollectionRules@2022-06-01"
+  name      = "${module.regions_config[local.primary_region].names.log-analytics-workspace}-apprequests-transform"
+  location  = local.primary_region
+  parent_id = "/subscriptions/${var.TARGET_SUBSCRIPTION_ID}/resourceGroups/${azurerm_resource_group.audit[local.primary_region].name}"
 
-  destinations {
-    log_analytics {
-      workspace_resource_id = module.log_analytics_workspace_audit[local.primary_region].id
-      name                  = "workspace"
+  body = {
+    kind = "WorkspaceTransforms"
+    properties = {
+      destinations = {
+        logAnalytics = [
+          {
+            workspaceResourceId = module.log_analytics_workspace_audit[local.primary_region].id
+            name                = "workspace"
+          }
+        ]
+      }
+      dataFlows = [
+        {
+          streams      = ["Microsoft-Table-AppRequests"]
+          destinations = ["workspace"]
+          transformKql = var.law.app_requests_transform_kql
+        }
+      ]
     }
-  }
-
-  data_flow {
-    streams      = ["Microsoft-Table-AppRequests"]
-    destinations = ["workspace"]
-    transform_kql = var.law.app_requests_transform_kql
   }
 }
 
@@ -28,9 +36,9 @@ resource "azapi_update_resource" "law_default_dcr" {
 
   body = {
     properties = {
-      defaultDataCollectionRuleResourceId = azurerm_monitor_data_collection_rule.app_requests_workspace_transform[0].id
+      defaultDataCollectionRuleResourceId = azapi_resource.app_requests_workspace_transform[0].id
     }
   }
 
-  depends_on = [azurerm_monitor_data_collection_rule.app_requests_workspace_transform]
+  depends_on = [azapi_resource.app_requests_workspace_transform]
 }
