@@ -13,6 +13,7 @@ var host = new HostBuilder()
     .AddDataService<ExceptionManagement>(config.ExceptionManagementDataServiceURL)
     .AddDataService<ParticipantDemographic>(config.DemographicDataServiceURL)
     .Build()
+    .AddServiceBusClient(config.ServiceBusConnectionString_client_internal)
     .ConfigureFunctionsWebApplication()
     .ConfigureServices(services =>
     {

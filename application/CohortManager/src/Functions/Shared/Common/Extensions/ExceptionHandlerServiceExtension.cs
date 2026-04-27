@@ -19,7 +19,7 @@ public static class ExceptionHandlerServiceExtension
         if (useServiceBus)
         {
             hostBuilder.AddConfiguration<ExceptionServiceBusConfig>(out ExceptionServiceBusConfig config);
-            hostBuilder.AddKeyedAzureQueues(config.UseServiceBus, config.ServiceBusConnectionString, "Exception");
+            hostBuilder.AddKeyedAzureQueues(config.UseServiceBus, config.ServiceBusConnectionString_client_internal, "Exception");
             return hostBuilder.ConfigureServices(_ =>
             {
                 _.AddSingleton<IExceptionHandler, ExceptionHandler>();
