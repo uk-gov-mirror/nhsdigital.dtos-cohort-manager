@@ -8,8 +8,8 @@ using Model;
 using NHS.Screening.DeleteParticipant;
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults()
     .AddConfiguration<DeleteParticipantConfig>(out DeleteParticipantConfig config)
+    .ConfigureFunctionsWebApplication()
     .AddDataServicesHandler()
         .AddDataService<CohortDistribution>(config.CohortDistributionDataServiceUrl)
         .Build()
@@ -20,9 +20,10 @@ var host = new HostBuilder()
         // Register health checks
         services.AddBasicHealthCheck("DeleteParticipant");
     })
-    .AddTelemetry()
     .AddExceptionHandler()
     .AddHttpClient()
+    .AddTelemetry()
     .Build();
+
 
 await host.RunAsync();
