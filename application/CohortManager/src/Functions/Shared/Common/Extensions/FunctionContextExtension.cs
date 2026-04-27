@@ -18,6 +18,11 @@ public static class FunctionContextExtension
         return authAttribute?.Roles ?? Array.Empty<Role>();
     }
 
+    public static Cis2User? GetUser(this FunctionContext context)
+    {
+        return context.Items.TryGetValue("Cis2User", out var user) ? user as Cis2User : null;
+    }
+
     public static FunctionEndpoint? GetEndpoint(this FunctionContext context)
     {
         ArgumentNullException.ThrowIfNull(context);

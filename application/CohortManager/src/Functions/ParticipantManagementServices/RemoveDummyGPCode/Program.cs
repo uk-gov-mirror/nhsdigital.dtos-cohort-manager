@@ -12,7 +12,7 @@ var host = new HostBuilder()
         services.AddSingleton<ICreateResponse, CreateResponse>();
         services.AddBasicHealthCheck("RemoveDummyGPCode");
     })
-
+    .AddAuditLogging(config.ServiceBusConnectionString_client_internal)
     .AddTelemetry()
     .AddHttpClient()
     .AddServiceBusClient(config.ServiceBusConnectionString_client_internal)

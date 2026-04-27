@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Model;
 using Model.Constants;
+using Model.Enums;
 using NHS.CohortManager.ParticipantManagementServices.Models;
 
 public class ReceiveRemoveDummyGpCodeFunction
@@ -23,6 +25,7 @@ public class ReceiveRemoveDummyGpCodeFunction
     private readonly IHttpClientFunction _httpClientFunction;
     private readonly IQueueClient _queueClient;
     private readonly RemoveDummyGpCodeConfig _config;
+    private readonly IAuditLogClient _auditLogClient;
 
     private static readonly Regex NonLetterRegex = new(@"[^\p{Lu}\p{Ll}\p{Lt}]", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
@@ -31,13 +34,15 @@ public class ReceiveRemoveDummyGpCodeFunction
         ICreateResponse createResponse,
         IHttpClientFunction httpClientFunction,
         IQueueClient queueClient,
-        IOptions<RemoveDummyGpCodeConfig> config)
+        IOptions<RemoveDummyGpCodeConfig> config,
+        IAuditLogClient auditLogClient)
     {
         _logger = logger;
         _createResponse = createResponse;
         _httpClientFunction = httpClientFunction;
         _queueClient = queueClient;
         _config = config.Value;
+        _auditLogClient = auditLogClient;
     }
 
     /// <summary>
@@ -55,6 +60,28 @@ public class ReceiveRemoveDummyGpCodeFunction
                 _logger.LogError("Request body deserialised to null");
                 return _createResponse.CreateHttpResponse(HttpStatusCode.BadRequest, req);
             }
+
+            var user = req.FunctionContext.GetUser();
+
+            if(user == null && !req.FunctionContext.RequiresAuthentication())
+            {
+                _logger.LogError("User information could not be retrieved from the function context");
+                return _createResponse.CreateHttpResponse(HttpStatusCode.InternalServerError, req);
+            }
+
+
+            await _auditLogClient.AddAsync(new ParticipantAuditMessage
+            {
+                NhsNumber = requestBody.NhsNumber,
+                Source = AuditSource.DummyGpRemoval,
+                RecordSourceDesc = "Dummy GP Code Removal Form",
+                CreatedBy = user != null ? $"{user.GivenName} {user.FamilyName}" : "Unknown User",
+                ScreeningId = 1,
+                RequestSnapshot = requestBody
+
+            });
+
+
 
             var validationContext = new ValidationContext(requestBody);
             var validationResult = new List<ValidationResult>();
