@@ -93,6 +93,7 @@ public class ManageServiceNowParticipantFunction
                 RecordSourceDesc = $"ServiceNow case: {serviceNowParticipant.ServiceNowCaseNumber}",
                 CreatedBy = nameof(ManageServiceNowParticipantFunction),
                 ScreeningId = (int)serviceNowParticipant.ScreeningId,
+                RequestSnapshot = serviceNowParticipant,
             });
         }
         catch (Exception ex)

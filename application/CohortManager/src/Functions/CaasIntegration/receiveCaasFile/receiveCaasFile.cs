@@ -149,6 +149,7 @@ public class ReceiveCaasFile
                 RecordSourceDesc = $"Parquet file: {fileName}",
                 CreatedBy = nameof(ReceiveCaasFile),
                 ScreeningId = screeningId,
+                RequestSnapshot = participant,
             });
 
         var failCount = await _auditLogClient.AddBatchAsync(auditMessages);
