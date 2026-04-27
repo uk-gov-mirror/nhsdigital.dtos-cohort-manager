@@ -1,6 +1,5 @@
 namespace Model;
 
-using System.Text.Json.Serialization;
 using Model.Enums;
 
 public class ParticipantAuditMessage
@@ -14,7 +13,5 @@ public class ParticipantAuditMessage
     public required string CreatedBy { get; set; }
     public int? ScreeningId { get; set; }
     public string? RawDataRef { get; set; }
-
-    [JsonIgnore]
     public object? RequestSnapshot { get; set; }
 }

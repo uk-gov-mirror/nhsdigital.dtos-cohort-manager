@@ -37,13 +37,12 @@ try
         services.AddTransient<IBlobStorageHelper, BlobStorageHelper>();
         services.AddTransient<ICopyFailedBatchToBlob, CopyFailedBatchToBlob>();
         services.AddScoped<IValidateDates, ValidateDates>();
-        services.AddTransient<IAuditLogClient, AuditLogClient>();
         // Register health checks
         services.AddBlobStorageHealthCheck("receiveCaasFile");
     })
     .AddTelemetry()
     .AddHttpClient()
-    .AddServiceBusClient(config.ServiceBusConnectionString_client_internal)
+    .AddAuditLogging(config.ServiceBusConnectionString_client_internal)
     .AddExceptionHandler()
     .AddDatabaseConnection()
     .Build();

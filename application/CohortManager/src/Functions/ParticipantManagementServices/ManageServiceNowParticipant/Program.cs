@@ -18,11 +18,10 @@ var host = new HostBuilder()
         // Register health checks
         services.AddBasicHealthCheck("ManageServiceNowParticipant");
         services.AddTransient<IBlobStorageHelper, BlobStorageHelper>();
-        services.AddTransient<IAuditLogClient, AuditLogClient>();
     })
     .AddTelemetry()
     .AddExceptionHandler()
-    .AddServiceBusClient(config.ServiceBusConnectionString_client_internal)
+    .AddAuditLogging(config.ServiceBusConnectionString_client_internal)
     .AddHttpClient()
     .Build();
 

@@ -13,6 +13,7 @@ var host = new HostBuilder()
     .AddServiceBusClient(auditConfig.ServiceBusConnectionString)
     .ConfigureServices(services =>
     {
+        services.AddTransient<IBlobStorageHelper, BlobStorageHelper>();
         services.AddDatabaseHealthCheck("AuditWriter");
     })
     .AddTelemetry()

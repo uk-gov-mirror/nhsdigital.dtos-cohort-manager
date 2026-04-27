@@ -5,6 +5,8 @@ using DataServices.Database;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Common;
 using Model;
 using Model.Enums;
 using Moq;
@@ -15,6 +17,7 @@ public class AuditWriterTests
 {
     private Mock<DataServicesContext> _mockDbContext;
     private Mock<DbSet<ParticipantAuditLog>> _mockDbSet;
+    private Mock<IBlobStorageHelper> _mockBlobStorageHelper;
     private Mock<ILogger<AuditWriter>> _mockLogger;
     private Mock<FunctionContext> _mockFunctionContext;
     private AuditWriter _auditWriterService;
@@ -39,10 +42,30 @@ public class AuditWriterTests
 
         _mockDbContext.Object.participantAuditLogs = _mockDbSet.Object;
 
+        _mockBlobStorageHelper = new Mock<IBlobStorageHelper>();
+        _mockBlobStorageHelper
+            .Setup(x => x.UploadFileToBlobStorageAndGetUri(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<BlobFile>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync("https://storage.blob.core.windows.net/participant-audit/test.json");
+
         _mockLogger = new Mock<ILogger<AuditWriter>>();
         _mockFunctionContext = new Mock<FunctionContext>();
 
-        _auditWriterService = new AuditWriter(_mockDbContext.Object, _mockLogger.Object);
+        var config = Options.Create(new AuditConfig
+        {
+            ServiceBusConnectionString = "Endpoint=sb://unit-test/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=test=",
+            AzureWebJobsStorage = "UseDevelopmentStorage=true",
+            AuditTopicName = "audit-topic"
+        });
+
+        _auditWriterService = new AuditWriter(
+            _mockDbContext.Object,
+            _mockBlobStorageHelper.Object,
+            config,
+            _mockLogger.Object);
     }
 
     [TestMethod]
@@ -50,7 +73,7 @@ public class AuditWriterTests
     {
         // Arrange
         var audit = CreateAuditMessage();
-        audit.RawDataRef = "https://storage.blob.core.windows.net/participant-audit/test.json";
+        audit.RequestSnapshot = new { NhsNumber = audit.NhsNumber, Event = "Created" };
         var messageText = JsonSerializer.Serialize(audit, JsonOptions);
 
         // Act
@@ -63,16 +86,16 @@ public class AuditWriterTests
         Assert.AreEqual(audit.CorrelationId, saved.CorrelationId);
         Assert.AreEqual((int)audit.Source, saved.RecordSource);
         Assert.AreEqual(audit.CreatedBy, saved.CreatedBy);
-        Assert.AreEqual(audit.RawDataRef, saved.RawDataRef);
+        Assert.AreEqual("https://storage.blob.core.windows.net/participant-audit/test.json", saved.RawDataRef);
         _mockDbContext.Verify(x => x.SaveChangesAsync(default), Times.Once);
     }
 
     [TestMethod]
-    public async Task Run_ValidMessage_PersistsBlobRefFromMessage()
+    public async Task Run_ValidMessage_PersistsBlobRefFromBlobWrite()
     {
         // Arrange
         var audit = CreateAuditMessage();
-        audit.RawDataRef = "https://storage.blob.core.windows.net/participant-audit/test.json";
+        audit.RequestSnapshot = new { Field = "value" };
         var messageText = JsonSerializer.Serialize(audit, JsonOptions);
 
         // Act
@@ -81,6 +104,13 @@ public class AuditWriterTests
         // Assert
         Assert.AreEqual(1, _addedEntities.Count);
         Assert.AreEqual("https://storage.blob.core.windows.net/participant-audit/test.json", _addedEntities[0].RawDataRef);
+        _mockBlobStorageHelper.Verify(
+            x => x.UploadFileToBlobStorageAndGetUri(
+                It.IsAny<string>(),
+                "participant-audit",
+                It.IsAny<BlobFile>(),
+                true),
+            Times.Once);
     }
 
     [TestMethod]
@@ -88,7 +118,6 @@ public class AuditWriterTests
     {
         // Arrange
         var audit = CreateAuditMessage();
-        audit.RawDataRef = null;
         var messageText = JsonSerializer.Serialize(audit, JsonOptions);
 
         // Act
@@ -98,6 +127,57 @@ public class AuditWriterTests
         Assert.AreEqual(1, _addedEntities.Count);
         Assert.IsNull(_addedEntities[0].RawDataRef);
         _mockDbContext.Verify(x => x.SaveChangesAsync(default), Times.Once);
+        _mockBlobStorageHelper.Verify(
+            x => x.UploadFileToBlobStorageAndGetUri(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<BlobFile>(),
+                It.IsAny<bool>()),
+            Times.Never);
+    }
+
+    [TestMethod]
+    public async Task Run_WhenBlobWriteReturnsNull_ThrowsAndDoesNotPersist()
+    {
+        // Arrange
+        _mockBlobStorageHelper
+            .Setup(x => x.UploadFileToBlobStorageAndGetUri(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<BlobFile>(),
+                It.IsAny<bool>()))
+            .ReturnsAsync((string?)null);
+
+        var audit = CreateAuditMessage();
+        audit.RequestSnapshot = new { Field = "value" };
+        var messageText = JsonSerializer.Serialize(audit, JsonOptions);
+
+        // Act & Assert
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+            async () => await _auditWriterService.Run(messageText, _mockFunctionContext.Object));
+        _mockDbContext.Verify(x => x.SaveChangesAsync(default), Times.Never);
+    }
+
+    [TestMethod]
+    public async Task Run_WhenBlobWriteThrows_ThrowsAndDoesNotPersist()
+    {
+        // Arrange
+        _mockBlobStorageHelper
+            .Setup(x => x.UploadFileToBlobStorageAndGetUri(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<BlobFile>(),
+                It.IsAny<bool>()))
+            .ThrowsAsync(new InvalidOperationException("Blob unavailable"));
+
+        var audit = CreateAuditMessage();
+        audit.RequestSnapshot = new { Field = "value" };
+        var messageText = JsonSerializer.Serialize(audit, JsonOptions);
+
+        // Act & Assert
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+            async () => await _auditWriterService.Run(messageText, _mockFunctionContext.Object));
+        _mockDbContext.Verify(x => x.SaveChangesAsync(default), Times.Never);
     }
 
     [TestMethod]
@@ -129,7 +209,7 @@ public class AuditWriterTests
             CreatedDatetime = new DateTime(2026, 4, 8, 10, 30, 0, DateTimeKind.Utc),
             CreatedBy = "TestFunction",
             ScreeningId = 1,
-            RawDataRef = "https://storage.blob.core.windows.net/participant-audit/snapshot.json"
+            RequestSnapshot = new { ScreeningId = 1, Event = "Import" }
         };
         var messageText = JsonSerializer.Serialize(audit, JsonOptions);
 
@@ -146,7 +226,7 @@ public class AuditWriterTests
         Assert.AreEqual("TestFunction", saved.CreatedBy);
         Assert.AreEqual(1, saved.ScreeningId);
         Assert.AreEqual(batchId, saved.BatchId);
-        Assert.AreEqual(audit.RawDataRef, saved.RawDataRef);
+        Assert.AreEqual("https://storage.blob.core.windows.net/participant-audit/test.json", saved.RawDataRef);
     }
 
     [TestMethod]
