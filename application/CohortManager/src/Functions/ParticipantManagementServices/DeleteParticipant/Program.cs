@@ -11,6 +11,7 @@ var host = new HostBuilder()
     .AddConfiguration<DeleteParticipantConfig>(out DeleteParticipantConfig config)
     .ConfigureFunctionsWebApplication()
     .AddDataServicesHandler()
+        .AddDataService<ParticipantDemographic>(config.ParticipantDemographicDataServiceUrl)
         .AddDataService<CohortDistribution>(config.CohortDistributionDataServiceUrl)
         .Build()
     .ConfigureServices(services =>
