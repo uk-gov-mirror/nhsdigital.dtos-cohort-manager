@@ -31,7 +31,7 @@ public class BlobStorageHelper : IBlobStorageHelper
 
         var destinationBlobServiceClient = new BlobServiceClient(connectionString);
         var destinationContainerClient = destinationBlobServiceClient.GetBlobContainerClient(poisonContainerName);
-        
+
         // Conditionally add timestamp to prevent collisions and maintain audit trail
         var destinationFileName = fileName;
         if (addTimestamp)
@@ -41,7 +41,7 @@ public class BlobStorageHelper : IBlobStorageHelper
             var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
             destinationFileName = $"{fileNameWithoutExtension}_{timestamp}{fileExtension}";
         }
-        
+
         var destinationBlobClient = destinationContainerClient.GetBlobClient(destinationFileName);
 
         await destinationContainerClient.CreateIfNotExistsAsync(PublicAccessType.None);
@@ -81,6 +81,25 @@ public class BlobStorageHelper : IBlobStorageHelper
         }
 
         return true;
+    }
+
+    public async Task<string?> UploadFileToBlobStorageAndGetUri(string connectionString, string containerName, BlobFile blobFile, bool overwrite = false)
+    {
+        var blobServiceClient = new BlobServiceClient(connectionString);
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        var blobClient = containerClient.GetBlobClient(blobFile.FileName);
+
+        await containerClient.CreateIfNotExistsAsync(PublicAccessType.None);
+        try
+        {
+            await blobClient.UploadAsync(blobFile.Data, overwrite: overwrite);
+            return blobClient.Uri.ToString();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "There has been a problem while uploading the file: {Message}", ex.Message);
+            return null;
+        }
     }
 
     public async Task<BlobFile> GetFileFromBlobStorage(string connectionString, string containerName, string fileName)

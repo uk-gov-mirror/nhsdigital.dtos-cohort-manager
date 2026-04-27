@@ -8,6 +8,7 @@ using NHS.CohortManager.ParticipantManagementServices;
 
 var host = new HostBuilder()
     .AddConfiguration(out ManageServiceNowParticipantConfig config)
+    .AddConfiguration<AuditClientConfig>()
         .AddDataServicesHandler()
         .AddDataService<ParticipantManagement>(config.ParticipantManagementURL)
         .Build()
@@ -16,6 +17,8 @@ var host = new HostBuilder()
     {
         // Register health checks
         services.AddBasicHealthCheck("ManageServiceNowParticipant");
+        services.AddTransient<IBlobStorageHelper, BlobStorageHelper>();
+        services.AddTransient<IAuditLogClient, AuditLogClient>();
     })
     .AddTelemetry()
     .AddExceptionHandler()

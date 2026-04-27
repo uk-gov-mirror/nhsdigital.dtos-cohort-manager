@@ -127,7 +127,7 @@ function version-create-effective-file() {
   local version_file="$dir/VERSION"
   local build_datetime=${BUILD_DATETIME:-$(date -u +'%Y-%m-%dT%H:%M:%S%z')}
 
-  if [ -f "$version_file" ]; then
+  if [[ -f "$version_file" ]]; then
     # shellcheck disable=SC2002
     cat "$version_file" | \
       sed "s/\(\${yyyy}\|\$yyyy\)/$(date --date="${build_datetime}" -u +"%Y")/g" | \

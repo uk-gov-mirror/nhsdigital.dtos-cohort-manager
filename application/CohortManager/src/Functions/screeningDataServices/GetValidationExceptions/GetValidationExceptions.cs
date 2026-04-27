@@ -44,6 +44,7 @@ public class GetValidationExceptions
     /// Returns 200 OK with data, 204 No Content if empty, 400 Bad Request for validation errors, or 500 Internal Server Error.
     /// </returns>
     [Function(nameof(GetValidationExceptions))]
+    [Authentication(Role.CohortManagerUser)]
     public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
     {
         var exceptionId = _httpParserHelper.GetQueryParameterAsInt(req, "exceptionId");
@@ -101,6 +102,7 @@ public class GetValidationExceptions
     /// Updates the ServiceNowId for a specific validation exception.
     /// </summary>
     [Function(nameof(UpdateExceptionServiceNowId))]
+    [Authentication(Role.CohortManagerUser)]
     public async Task<HttpResponseData> UpdateExceptionServiceNowId([HttpTrigger(AuthorizationLevel.Anonymous, "put")] HttpRequestData req)
     {
         try
@@ -138,6 +140,7 @@ public class GetValidationExceptions
     /// Retrieves validation exceptions and reports by search type (NHS Number or Exception ID).
     /// </summary>
     [Function(nameof(GetValidationExceptionsByType))]
+    [Authentication(Role.CohortManagerUser)]
     public async Task<HttpResponseData> GetValidationExceptionsByType([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
     {
         var searchType = HttpParserHelper.GetEnumQueryParameter(req, "searchType", SearchType.NhsNumber);
