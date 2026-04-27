@@ -1,35 +1,23 @@
 # Security
 
-NHS England takes security and the protection of private data extremely seriously. If you believe you have found a vulnerability or other issue which has compromised or could compromise the security of any of our systems and/or private data managed by our systems, please do not hesitate to contact us using the methods outlined below.
+We take security and the protection of private data extremely seriously. If you believe you have found a vulnerability or other issue which has compromised or could compromise the security of any of our systems or private data managed by our systems, please do not hesitate to contact us using the method outlined below.
 
-## Table of Contents
+## Table of contents
 
 - [Security](#security)
-  - [Table of Contents](#table-of-contents)
+  - [Table of contents](#table-of-contents)
   - [Reporting a vulnerability](#reporting-a-vulnerability)
-    - [Email](#email)
-    - [NCSC](#ncsc)
-  - [General Security Enquiries](#general-security-enquiries)
+  - [General security enquiries](#general-security-enquiries)
 
 ## Reporting a vulnerability
 
-Please note, email is our preferred method of receiving reports.
+If you believe you have found a security issue in this repository, please report it using GitHub's private vulnerability reporting:
 
-### Email
+1. [Report a vulnerability](https://github.com/NHSDigital/software-engineering-quality-framework/security/advisories/new)
+2. Provide details of the issue and steps to reproduce
 
-If you wish to notify us of a vulnerability via email, please include detailed information on the nature of the vulnerability and any steps required to reproduce it.
+This creates a private channel for discussion and allows us to coordinate a fix before any public disclosure.
 
-You can reach us at:
-
-- _[ A product team email address ]_
-- [cybersecurity@nhs.net](cybersecurity@nhs.net)
-
-### NCSC
-
-You can send your report to the National Cyber Security Centre, who will assess your report and pass it on to NHS England if necessary.
-
-You can report vulnerabilities here: [https://www.ncsc.gov.uk/information/vulnerability-reporting](https://www.ncsc.gov.uk/information/vulnerability-reporting)
-
-## General Security Enquiries
+## General security enquiries
 
 If you have general enquiries regarding our cybersecurity, please reach out to us at [cybersecurity@nhs.net](cybersecurity@nhs.net)
