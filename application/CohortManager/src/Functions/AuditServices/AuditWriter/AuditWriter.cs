@@ -24,7 +24,7 @@ public class AuditWriter
 
     [Function(nameof(AuditWriter))]
     public async Task Run(
-        [ServiceBusTrigger(topicName: "%AuditTopicName%", subscriptionName: "%AuditSubscription%", Connection = "ServiceBusConnectionString")] string messageText, FunctionContext context)
+        [ServiceBusTrigger(topicName: "%AuditTopicName%", subscriptionName: "%AuditSubscription%", Connection = "ServiceBusConnectionString_client_internal")] string messageText, FunctionContext context)
     {
         ParticipantAuditMessage? audit;
         try

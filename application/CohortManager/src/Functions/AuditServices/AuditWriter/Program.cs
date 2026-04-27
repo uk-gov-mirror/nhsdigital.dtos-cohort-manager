@@ -1,7 +1,4 @@
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using DataServices.Core;
-using DataServices.Database;
 using HealthChecks.Extensions;
 using Common;
 using NHS.CohortManager.AuditServices;
@@ -9,8 +6,8 @@ using NHS.CohortManager.AuditServices;
 var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
     .AddConfiguration<AuditConfig>(out AuditConfig auditConfig)
-    .AddDataServicesHandler<DataServicesContext>()
-    .AddServiceBusClient(auditConfig.ServiceBusConnectionString)
+    // .AddDataServicesHandler<DataServicesContext>()
+    .AddServiceBusClient(auditConfig.ServiceBusConnectionString_client_internal)
     .ConfigureServices(services =>
     {
         services.AddDatabaseHealthCheck("AuditWriter");
