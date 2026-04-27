@@ -46,7 +46,7 @@ public class ManageServiceNowParticipantFunction
     /// </summary>
     /// <param name="serviceNowParticipant">The participant from ServiceNow</param>
     [Function(nameof(ManageServiceNowParticipantFunction))]
-    public async Task Run([ServiceBusTrigger(topicName: "%ServiceNowParticipantManagementTopic%", subscriptionName: "%ManageServiceNowParticipantSubscription%", Connection = "ServiceBusConnectionString_client_internal")] ServiceNowParticipant serviceNowParticipant)
+    public async Task Run([ServiceBusTrigger(topicName: "%ServiceNowParticipantManagementTopic%", subscriptionName: "%ManageServiceNowParticipantSubscription%", Connection = "ServiceBusConnectionString_internal")] ServiceNowParticipant serviceNowParticipant)
     {
         try
         {
