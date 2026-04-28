@@ -5,7 +5,6 @@ using System.Text.Json;
 using Common;
 using DataServices.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Model;
 using Moq;
@@ -30,11 +29,33 @@ public class ReferenceDataInsertHandlerTests
             _loggerMock.Object);
     }
 
+    private Mock<IDataServiceAccessor<T>> SetupAccessor<T>(bool insertResult = true) where T : class
+    {
+        var accessorMock = new Mock<IDataServiceAccessor<T>>();
+        accessorMock.Setup(a => a.InsertSingle(It.IsAny<T>())).ReturnsAsync(insertResult);
+        _serviceProviderMock.Setup(sp => sp.GetService(typeof(IDataServiceAccessor<T>)))
+            .Returns(accessorMock.Object);
+        return accessorMock;
+    }
+
+    private void SetupBlobStorageDefaults(string blobFileName)
+    {
+        _blobStorageHelperMock.Setup(b => b.GetFileFromBlobStorage(It.IsAny<string>(), It.IsAny<string>(), blobFileName))
+            .ReturnsAsync((BlobFile)null!);
+        _blobStorageHelperMock.Setup(b => b.UploadFileToBlobStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<BlobFile>(), true))
+            .ReturnsAsync(true);
+    }
+
+    private static JsonElement CreatePayload(object data)
+    {
+        return JsonSerializer.SerializeToElement(data);
+    }
+
     [TestMethod]
     public async Task ProcessRecord_UnknownDataType_ReturnsFalse()
     {
         // Arrange
-        var data = JsonSerializer.SerializeToElement(new { Id = 1 });
+        var data = CreatePayload(new { Id = 1 });
 
         // Act
         var result = await _handler.ProcessRecord("NonExistentType", data);
@@ -44,21 +65,12 @@ public class ReferenceDataInsertHandlerTests
     }
 
     [TestMethod]
-    public async Task ProcessRecord_ValidDataType_InsertsIntoDatabaseAndAppendsToBlob_ReturnsTrue()
+    public async Task ProcessRecord_ValidRecord_InsertsAndAppendsToBlob_ReturnsTrue()
     {
         // Arrange
-        var gpPractice = new { GpPracticeCode = "Y12345", GpPracticeName = "Test Practice" };
-        var data = JsonSerializer.SerializeToElement(gpPractice);
-
-        var accessorMock = new Mock<IDataServiceAccessor<BsSelectGpPractice>>();
-        accessorMock.Setup(a => a.InsertSingle(It.IsAny<BsSelectGpPractice>())).ReturnsAsync(true);
-        _serviceProviderMock.Setup(sp => sp.GetService(typeof(IDataServiceAccessor<BsSelectGpPractice>)))
-            .Returns(accessorMock.Object);
-
-        _blobStorageHelperMock.Setup(b => b.GetFileFromBlobStorage(It.IsAny<string>(), It.IsAny<string>(), "BsSelectGpPractice.json"))
-            .ReturnsAsync((BlobFile)null!);
-        _blobStorageHelperMock.Setup(b => b.UploadFileToBlobStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<BlobFile>(), true))
-            .ReturnsAsync(true);
+        var data = CreatePayload(new { GpPracticeCode = "Y12345" });
+        var accessorMock = SetupAccessor<BsSelectGpPractice>();
+        SetupBlobStorageDefaults("BsSelectGpPractice.json");
 
         // Act
         var result = await _handler.ProcessRecord("BsSelectGpPractice", data);
@@ -70,11 +82,10 @@ public class ReferenceDataInsertHandlerTests
     }
 
     [TestMethod]
-    public async Task ProcessRecord_DatabaseInsertFails_ReturnsFalse()
+    public async Task ProcessRecord_DatabaseInsertThrows_ReturnsFalse()
     {
         // Arrange
-        var data = JsonSerializer.SerializeToElement(new { ScreeningLkpId = 1 });
-
+        var data = CreatePayload(new { ScreeningLkpId = 1 });
         var accessorMock = new Mock<IDataServiceAccessor<ScreeningLkp>>();
         accessorMock.Setup(a => a.InsertSingle(It.IsAny<ScreeningLkp>()))
             .ThrowsAsync(new Exception("Database connection failed"));
@@ -89,24 +100,17 @@ public class ReferenceDataInsertHandlerTests
     }
 
     [TestMethod]
-    public async Task ProcessRecord_DuplicateKeyViolation_ReturnsTrue()
+    public async Task ProcessRecord_PrimaryKeyViolation_ReturnsTrue()
     {
         // Arrange
-        var data = JsonSerializer.SerializeToElement(new { LanguageCodeId = "EN", LanguageDescription = "English" });
-
-        var innerException = new Exception("Violation of PRIMARY KEY constraint");
-        var dbUpdateException = new DbUpdateException("An error occurred", innerException);
+        var data = CreatePayload(new { LanguageCodeId = "EN", LanguageDescription = "English" });
+        var dbUpdateException = new DbUpdateException("An error occurred", new Exception("Violation of PRIMARY KEY constraint"));
 
         var accessorMock = new Mock<IDataServiceAccessor<LanguageCode>>();
-        accessorMock.Setup(a => a.InsertSingle(It.IsAny<LanguageCode>()))
-            .ThrowsAsync(dbUpdateException);
+        accessorMock.Setup(a => a.InsertSingle(It.IsAny<LanguageCode>())).ThrowsAsync(dbUpdateException);
         _serviceProviderMock.Setup(sp => sp.GetService(typeof(IDataServiceAccessor<LanguageCode>)))
             .Returns(accessorMock.Object);
-
-        _blobStorageHelperMock.Setup(b => b.GetFileFromBlobStorage(It.IsAny<string>(), It.IsAny<string>(), "LanguageCode.json"))
-            .ReturnsAsync((BlobFile)null!);
-        _blobStorageHelperMock.Setup(b => b.UploadFileToBlobStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<BlobFile>(), true))
-            .ReturnsAsync(true);
+        SetupBlobStorageDefaults("LanguageCode.json");
 
         // Act
         var result = await _handler.ProcessRecord("LanguageCode", data);
@@ -116,24 +120,17 @@ public class ReferenceDataInsertHandlerTests
     }
 
     [TestMethod]
-    public async Task ProcessRecord_DuplicateKey_UniqueConstraintMessage_ReturnsTrue()
+    public async Task ProcessRecord_UniqueConstraintViolation_ReturnsTrue()
     {
         // Arrange
-        var data = JsonSerializer.SerializeToElement(new { GenderCode = "M" });
-
-        var innerException = new Exception("unique constraint violation on table");
-        var dbUpdateException = new DbUpdateException("An error occurred", innerException);
+        var data = CreatePayload(new { GenderCode = "M" });
+        var dbUpdateException = new DbUpdateException("An error occurred", new Exception("unique constraint violation on table"));
 
         var accessorMock = new Mock<IDataServiceAccessor<GenderMaster>>();
-        accessorMock.Setup(a => a.InsertSingle(It.IsAny<GenderMaster>()))
-            .ThrowsAsync(dbUpdateException);
+        accessorMock.Setup(a => a.InsertSingle(It.IsAny<GenderMaster>())).ThrowsAsync(dbUpdateException);
         _serviceProviderMock.Setup(sp => sp.GetService(typeof(IDataServiceAccessor<GenderMaster>)))
             .Returns(accessorMock.Object);
-
-        _blobStorageHelperMock.Setup(b => b.GetFileFromBlobStorage(It.IsAny<string>(), It.IsAny<string>(), "GenderMaster.json"))
-            .ReturnsAsync((BlobFile)null!);
-        _blobStorageHelperMock.Setup(b => b.UploadFileToBlobStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<BlobFile>(), true))
-            .ReturnsAsync(true);
+        SetupBlobStorageDefaults("GenderMaster.json");
 
         // Act
         var result = await _handler.ProcessRecord("GenderMaster", data);
@@ -143,16 +140,11 @@ public class ReferenceDataInsertHandlerTests
     }
 
     [TestMethod]
-    public async Task ProcessRecord_BlobAppendFails_StillReturnsTrue()
+    public async Task ProcessRecord_BlobAppendFails_ReturnsTrue()
     {
         // Arrange
-        var data = JsonSerializer.SerializeToElement(new { OutCode = "AB1" });
-
-        var accessorMock = new Mock<IDataServiceAccessor<BsSelectOutCode>>();
-        accessorMock.Setup(a => a.InsertSingle(It.IsAny<BsSelectOutCode>())).ReturnsAsync(true);
-        _serviceProviderMock.Setup(sp => sp.GetService(typeof(IDataServiceAccessor<BsSelectOutCode>)))
-            .Returns(accessorMock.Object);
-
+        var data = CreatePayload(new { OutCode = "AB1" });
+        SetupAccessor<BsSelectOutCode>();
         _blobStorageHelperMock.Setup(b => b.GetFileFromBlobStorage(It.IsAny<string>(), It.IsAny<string>(), "BsSelectOutCode.json"))
             .ThrowsAsync(new Exception("Blob storage unavailable"));
 
@@ -164,24 +156,16 @@ public class ReferenceDataInsertHandlerTests
     }
 
     [TestMethod]
-    public async Task ProcessRecord_ExistingBlobData_AppendsNewRecord()
+    public async Task ProcessRecord_ExistingBlobRecords_AppendsNewRecord()
     {
         // Arrange
-        var existingRecords = new[] { new { PostingId = 1 } };
-        var existingJson = JsonSerializer.Serialize(existingRecords);
+        var existingJson = JsonSerializer.Serialize(new[] { new { PostingId = 1 } });
         var existingBlob = new BlobFile(Encoding.UTF8.GetBytes(existingJson), "CurrentPosting.json");
+        var data = CreatePayload(new { PostingId = 2 });
 
-        var data = JsonSerializer.SerializeToElement(new { PostingId = 2 });
-
-        var accessorMock = new Mock<IDataServiceAccessor<CurrentPosting>>();
-        accessorMock.Setup(a => a.InsertSingle(It.IsAny<CurrentPosting>())).ReturnsAsync(true);
-        _serviceProviderMock.Setup(sp => sp.GetService(typeof(IDataServiceAccessor<CurrentPosting>)))
-            .Returns(accessorMock.Object);
-
+        SetupAccessor<CurrentPosting>();
         _blobStorageHelperMock.Setup(b => b.GetFileFromBlobStorage(It.IsAny<string>(), It.IsAny<string>(), "CurrentPosting.json"))
             .ReturnsAsync(existingBlob);
-        _blobStorageHelperMock.Setup(b => b.UploadFileToBlobStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<BlobFile>(), true))
-            .ReturnsAsync(true);
 
         BlobFile? uploadedBlob = null;
         _blobStorageHelperMock.Setup(b => b.UploadFileToBlobStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<BlobFile>(), true))
@@ -199,14 +183,13 @@ public class ReferenceDataInsertHandlerTests
         using var reader = new StreamReader(uploadedBlob.Data);
         var uploadedJson = await reader.ReadToEndAsync();
         var records = JsonSerializer.Deserialize<List<JsonElement>>(uploadedJson);
-
         Assert.AreEqual(2, records!.Count);
     }
 
     [TestMethod]
-    public async Task ProcessRecord_NullDeserialisation_ReturnsFalse()
+    public async Task ProcessRecord_NullJsonPayload_ReturnsFalse()
     {
-        // Arrange — a payload that deserialises to something but is "null" in a JSON sense
+        // Arrange
         var data = JsonSerializer.SerializeToElement<object>(null!);
 
         // Act
@@ -216,32 +199,27 @@ public class ReferenceDataInsertHandlerTests
         Assert.IsFalse(result);
     }
 
+    [DataRow("BsSelectGpPractice", DisplayName = "BsSelectGpPractice is a registered type")]
+    [DataRow("BsSelectOutCode", DisplayName = "BsSelectOutCode is a registered type")]
+    [DataRow("CurrentPosting", DisplayName = "CurrentPosting is a registered type")]
+    [DataRow("ExcludedSMULookup", DisplayName = "ExcludedSMULookup is a registered type")]
+    [DataRow("LanguageCode", DisplayName = "LanguageCode is a registered type")]
+    [DataRow("ScreeningLkp", DisplayName = "ScreeningLkp is a registered type")]
+    [DataRow("GeneCodeLkp", DisplayName = "GeneCodeLkp is a registered type")]
+    [DataRow("HigherRiskReferralReasonLkp", DisplayName = "HigherRiskReferralReasonLkp is a registered type")]
+    [DataRow("BsoOrganisation", DisplayName = "BsoOrganisation is a registered type")]
+    [DataRow("GenderMaster", DisplayName = "GenderMaster is a registered type")]
     [TestMethod]
-    [DataRow("BsSelectGpPractice")]
-    [DataRow("BsSelectOutCode")]
-    [DataRow("CurrentPosting")]
-    [DataRow("ExcludedSMULookup")]
-    [DataRow("LanguageCode")]
-    [DataRow("ScreeningLkp")]
-    [DataRow("GeneCodeLkp")]
-    [DataRow("HigherRiskReferralReasonLkp")]
-    [DataRow("BsoOrganisation")]
-    [DataRow("GenderMaster")]
-    public async Task ProcessRecord_AllRegisteredTypes_AreRecognised(string dataType)
+    public async Task ProcessRecord_RegisteredDataType_DoesNotLogUnknownType(string dataType)
     {
-        // Arrange — just verify the type is recognised (will fail on deserialise but not on lookup)
-        var data = JsonSerializer.SerializeToElement(new { Id = 1 });
-
-        // We need a mock accessor for whatever type this maps to.
-        // Since we can't easily set up all 10, verify it doesn't return false for "unknown type".
-        // The handler will attempt to resolve from DI and fail, but that's a different error path.
+        // Arrange
+        var data = CreatePayload(new { Id = 1 });
         _serviceProviderMock.Setup(sp => sp.GetService(It.IsAny<Type>())).Returns(null!);
 
         // Act
-        var result = await _handler.ProcessRecord(dataType, data);
+        await _handler.ProcessRecord(dataType, data);
 
-        // Assert — will be false because DI can't resolve the accessor, but it should NOT be
-        // false because the type was unknown. We verify no "Unknown reference data type" log.
+        // Assert
         _loggerMock.Verify(
             x => x.Log(
                 LogLevel.Error,
@@ -253,20 +231,12 @@ public class ReferenceDataInsertHandlerTests
     }
 
     [TestMethod]
-    public async Task ProcessRecord_DataTypeLookup_IsCaseInsensitive()
+    public async Task ProcessRecord_CaseInsensitiveDataType_ReturnsTrue()
     {
         // Arrange
-        var data = JsonSerializer.SerializeToElement(new { GpPracticeCode = "Y12345" });
-
-        var accessorMock = new Mock<IDataServiceAccessor<BsSelectGpPractice>>();
-        accessorMock.Setup(a => a.InsertSingle(It.IsAny<BsSelectGpPractice>())).ReturnsAsync(true);
-        _serviceProviderMock.Setup(sp => sp.GetService(typeof(IDataServiceAccessor<BsSelectGpPractice>)))
-            .Returns(accessorMock.Object);
-
-        _blobStorageHelperMock.Setup(b => b.GetFileFromBlobStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((BlobFile)null!);
-        _blobStorageHelperMock.Setup(b => b.UploadFileToBlobStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<BlobFile>(), true))
-            .ReturnsAsync(true);
+        var data = CreatePayload(new { GpPracticeCode = "Y12345" });
+        var accessorMock = SetupAccessor<BsSelectGpPractice>();
+        SetupBlobStorageDefaults("BsSelectGpPractice.json");
 
         // Act
         var result = await _handler.ProcessRecord("bsselectgppractice", data);
@@ -277,25 +247,17 @@ public class ReferenceDataInsertHandlerTests
     }
 
     [TestMethod]
-    public async Task ProcessRecord_InsertSingleReturnsFalse_StillReturnsTrue()
+    public async Task ProcessRecord_InsertSingleReturnsFalse_ReturnsTrue()
     {
-        // Arrange — InsertSingle returns false (e.g. no rows affected) but no exception
-        var data = JsonSerializer.SerializeToElement(new { GpPracticeCode = "Y99999" });
-
-        var accessorMock = new Mock<IDataServiceAccessor<BsSelectGpPractice>>();
-        accessorMock.Setup(a => a.InsertSingle(It.IsAny<BsSelectGpPractice>())).ReturnsAsync(false);
-        _serviceProviderMock.Setup(sp => sp.GetService(typeof(IDataServiceAccessor<BsSelectGpPractice>)))
-            .Returns(accessorMock.Object);
-
-        _blobStorageHelperMock.Setup(b => b.GetFileFromBlobStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((BlobFile)null!);
-        _blobStorageHelperMock.Setup(b => b.UploadFileToBlobStorage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<BlobFile>(), true))
-            .ReturnsAsync(true);
+        // Arrange
+        var data = CreatePayload(new { GpPracticeCode = "Y99999" });
+        SetupAccessor<BsSelectGpPractice>(insertResult: false);
+        SetupBlobStorageDefaults("BsSelectGpPractice.json");
 
         // Act
         var result = await _handler.ProcessRecord("BsSelectGpPractice", data);
 
-        // Assert — returns true because InsertSingle returning false is treated as "maybe duplicate" not failure
+        // Assert
         Assert.IsTrue(result);
     }
 }
