@@ -4,7 +4,7 @@ using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 
-public class HealthCheckFilterTelemetryProcessor : ITelemetryProcessor, ITelemetryInitializer
+public class HealthCheckFilterTelemetryProcessor : ITelemetryProcessor
 {
     private readonly ITelemetryProcessor _next;
 
@@ -70,10 +70,5 @@ public class HealthCheckFilterTelemetryProcessor : ITelemetryProcessor, ITelemet
         }
 
         return item is ExceptionTelemetry;
-    }
-
-    public void Initialize(ITelemetry telemetry)
-    {
-        throw new NotImplementedException();
     }
 }
