@@ -17,6 +17,7 @@ public class AllocateServiceProviderTests
     private readonly Mock<IDataServiceClient<CohortDistribution>> _cohortDistributionClient = new();
     private readonly Mock<IDataServiceClient<ParticipantManagement>> _participantManagementClient = new();
     private readonly Mock<IDataServiceClient<ParticipantDemographic>> _participantDemographicClient = new();
+    private readonly Mock<IDataServiceClient<ServicenowCase>> _serviceNowCasesClient = new();
     private readonly Mock<IHttpClientFunction> _httpClientFunction = new();
     private readonly Mock<IOptions<DistributeParticipantConfig>> _config = new();
 
@@ -24,6 +25,7 @@ public class AllocateServiceProviderTests
     {
         DistributeParticipantConfig config = new()
         {
+            ServiceNowCasesDataServiceURL = "ServiceNowCasesDataServiceURL",
             LookupValidationURL = "LookupValidationURL",
             StaticValidationURL = "StaticValidationURL",
             TransformDataServiceURL = "TransformDataServiceURL",
@@ -42,6 +44,7 @@ public class AllocateServiceProviderTests
             _cohortDistributionClient.Object,
             _participantManagementClient.Object,
             _participantDemographicClient.Object,
+            _serviceNowCasesClient.Object,
             _config.Object,
             NullLogger<DistributeParticipantActivities>.Instance,
             _httpClientFunction.Object,

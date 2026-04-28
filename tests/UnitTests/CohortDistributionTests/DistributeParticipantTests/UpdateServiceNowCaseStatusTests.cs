@@ -28,6 +28,7 @@ public class UpdateServiceNowCaseStatusTests
         var mockParticipantDemographicClient = new Mock<IDataServiceClient<ParticipantDemographic>>();
         var mockHttpClientFunction = new Mock<IHttpClientFunction>();
         var mockConfig = new Mock<Microsoft.Extensions.Options.IOptions<DistributeParticipantConfig>>();
+        var mockAllocationConfigProvider = new Mock<IAllocationConfigProvider>();
 
         var config = new DistributeParticipantConfig
         {
@@ -53,7 +54,8 @@ public class UpdateServiceNowCaseStatusTests
             _mockServiceNowCasesClient.Object,
             mockConfig.Object,
             _mockLogger.Object,
-            mockHttpClientFunction.Object
+            mockHttpClientFunction.Object,
+            mockAllocationConfigProvider.Object
         );
     }
 
