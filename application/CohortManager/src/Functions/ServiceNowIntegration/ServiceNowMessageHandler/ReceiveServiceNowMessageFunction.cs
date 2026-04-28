@@ -22,15 +22,17 @@ public class ReceiveServiceNowMessageFunction
     private readonly ServiceNowMessageHandlerConfig _config;
     private readonly IDataServiceClient<ServicenowCase> _serviceNowCaseClient;
     private readonly IServiceNowClient _serviceNowClient;
+    private readonly IAuditLogClient _auditLogClient;
 
     public ReceiveServiceNowMessageFunction(ILogger<ReceiveServiceNowMessageFunction> logger, ICreateResponse createResponse,
         IQueueClient queueClient, IOptions<ServiceNowMessageHandlerConfig> config, IDataServiceClient<ServicenowCase> serviceNowCaseClient,
-        IServiceNowClient serviceNowClient)
+        IServiceNowClient serviceNowClient, IAuditLogClient auditLogClient)
     {
         _logger = logger;
         _createResponse = createResponse;
         _queueClient = queueClient;
         _config = config.Value;
+        _auditLogClient = auditLogClient;
         _serviceNowCaseClient = serviceNowCaseClient;
         _serviceNowClient = serviceNowClient;
     }
@@ -58,6 +60,16 @@ public class ReceiveServiceNowMessageFunction
                 _logger.LogError("Request body deserialised to null");
                 return _createResponse.CreateHttpResponse(HttpStatusCode.BadRequest, req);
             }
+
+            await _auditLogClient.AddAsync(new ParticipantAuditMessage
+            {
+                NhsNumber = requestBody.VariableData.NhsNumber,
+                Source = AuditSource.ManualAdd,
+                RecordSourceDesc = $"ServiceNow case: {requestBody.ServiceNowCaseNumber}",
+                CreatedBy = nameof(ReceiveServiceNowMessageFunction),
+                ScreeningId = (int)ServiceProvider.BSS,
+                RequestSnapshot = requestBody
+            });
 
             var validationContext = new ValidationContext(requestBody.VariableData);
             var validationResult = new List<ValidationResult>();

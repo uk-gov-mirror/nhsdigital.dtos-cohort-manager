@@ -8,8 +8,7 @@ using NHS.CohortManager.ParticipantManagementServices;
 
 var host = new HostBuilder()
     .AddConfiguration(out ManageServiceNowParticipantConfig config)
-    .AddConfiguration<AuditClientConfig>()
-        .AddDataServicesHandler()
+    .AddDataServicesHandler()
         .AddDataService<ParticipantManagement>(config.ParticipantManagementURL)
         .Build()
     .ConfigureFunctionsWorkerDefaults()
@@ -19,9 +18,9 @@ var host = new HostBuilder()
         services.AddBasicHealthCheck("ManageServiceNowParticipant");
         services.AddTransient<IBlobStorageHelper, BlobStorageHelper>();
     })
+    .AddServiceBusClient(config.ServiceBusConnectionString_client_internal)
     .AddTelemetry()
     .AddExceptionHandler()
-    .AddAuditLogging(config.ServiceBusConnectionString_client_internal)
     .AddHttpClient()
     .Build();
 

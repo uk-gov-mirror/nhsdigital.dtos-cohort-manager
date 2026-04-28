@@ -22,6 +22,7 @@ var host = new HostBuilder()
         // Register health checks
         services.AddBasicHealthCheck("ServiceNowMessageHandler");
     })
+    .AddAuditLogging(config.ServiceBusConnectionString_client_internal)
     .AddTelemetry()
     .AddServiceBusClient(config.ServiceBusConnectionString_client_internal)
     .Build();
