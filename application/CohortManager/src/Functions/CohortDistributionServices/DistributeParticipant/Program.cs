@@ -19,6 +19,7 @@ var host = new HostBuilder()
     {
         // Register health checks
         services.AddBasicHealthCheck("DistributeParticipant");
+        services.AddSingleton<IAllocationConfigProvider, AllocationConfigProvider>();
     })
     .AddExceptionHandler()
     .AddTelemetry()

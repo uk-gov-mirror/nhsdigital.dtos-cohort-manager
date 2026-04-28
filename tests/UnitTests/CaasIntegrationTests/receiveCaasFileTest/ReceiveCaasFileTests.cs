@@ -9,13 +9,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Common;
 using Common.Interfaces;
 using NHS.Screening.ReceiveCaasFile;
-using Data.Database;
 using Model;
 using DataServices.Client;
 using NHS.CohortManager.Tests.TestUtils;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Options;
+using Model.Enums;
 
 [TestClass]
 public class ReceiveCaasFileTests
@@ -31,6 +30,7 @@ public class ReceiveCaasFileTests
     private readonly Mock<IOptions<ReceiveCaasFileConfig>> _config = new();
     private readonly Mock<IExceptionHandler> _exceptionHandlerMock = new();
     private readonly Mock<IBlobStorageHelper> _blobStorageHelperMock = new();
+    private readonly Mock<IAuditLogClient> _auditLogClientMock = new();
 
     public ReceiveCaasFileTests()
     {
@@ -59,7 +59,8 @@ public class ReceiveCaasFileTests
                                                     _mockScreeningLkpClient.Object,
                                                     _config.Object,
                                                     _blobStorageHelperMock.Object,
-                                                    _exceptionHandlerMock.Object);
+                                                    _exceptionHandlerMock.Object,
+                                                    _auditLogClientMock.Object);
 
         _blobName = "add_1_-_CAAS_BREAST_SCREENING_COHORT.parquet";
 
@@ -191,6 +192,11 @@ public class ReceiveCaasFileTests
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
             Times.Once);
 
+        _auditLogClientMock.Verify(x => x.AddBatchAsync(
+            It.Is<IEnumerable<ParticipantAuditMessage>>(msgs =>
+                msgs.All(m => m.Source == AuditSource.ParquetFile && m.CreatedBy == nameof(ReceiveCaasFile))
+            )), Times.AtLeastOnce);
+
         Assert.IsFalse(File.Exists(tempFilePath), "Temporary file was not deleted.");
     }
 
@@ -308,5 +314,37 @@ public class ReceiveCaasFileTests
            Times.Once);
 
         Assert.IsFalse(File.Exists(tempFilePath), "Temporary file was not deleted.");
+    }
+
+    [TestMethod]
+    public async Task Run_WhenAuditEnqueueFails_CompletesSuccessfullyAndLogsWarning()
+    {
+        // Arrange
+        string parquetFilePath = GetParquetFilePath(_blobName);
+        await using var fileSteam = File.OpenRead(parquetFilePath);
+        var screeningLkp = new ScreeningLkp
+        {
+            ScreeningName = "test screening name",
+            ScreeningId = 1,
+            ScreeningWorkflowId = "TestWorkflow"
+        };
+
+        _mockScreeningLkpClient
+            .Setup(x => x.GetSingleByFilter(It.IsAny<Expression<Func<ScreeningLkp, bool>>>()))
+            .ReturnsAsync(screeningLkp);
+        _auditLogClientMock.Setup(x => x.AddBatchAsync(It.IsAny<IEnumerable<ParticipantAuditMessage>>()))
+            .ReturnsAsync(1);
+
+        // Act
+        await _receiveCaasFileInstance.Run(fileSteam, _blobName);
+
+        // Assert
+        _auditLogClientMock.Verify(x => x.AddBatchAsync(It.IsAny<IEnumerable<ParticipantAuditMessage>>()), Times.AtLeastOnce);
+        _mockLogger.Verify(x => x.Log(
+            It.Is<LogLevel>(l => l == LogLevel.Warning),
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Audit enqueue failed")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.AtLeastOnce);
     }
 }

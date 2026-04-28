@@ -3,18 +3,41 @@
     "Namespaces": [
       {
         "Name": "sbemulatorns",
-          "Topics": [
-            {
-              "Name": "create-exception-topic",
-              "Properties": {
-                "DefaultMessageTimeToLive": "PT1H",
-                "DuplicateDetectionHistoryTimeWindow": "PT20S",
-                "RequiresDuplicateDetection": false
-              },
-              "Subscriptions": [
-                {
-                  "Name": "create-exception-sub",
-                  "Properties": {
+        "Queues": [],
+        "Topics": [
+          {
+            "Name": "participant-audit-topic",
+            "Properties": {
+              "DefaultMessageTimeToLive": "PT1H",
+              "DuplicateDetectionHistoryTimeWindow": "PT20S",
+              "RequiresDuplicateDetection": false
+            },
+            "Subscriptions": [
+              {
+                "Name": "audit-writer-sub",
+                "Properties": {
+                  "DeadLetteringOnMessageExpiration": false,
+                  "DefaultMessageTimeToLive": "PT1H",
+                  "LockDuration": "PT1M",
+                  "MaxDeliveryCount": 10,
+                  "ForwardDeadLetteredMessagesTo": "",
+                  "ForwardTo": "",
+                  "RequiresSession": false
+                }
+              }
+            ]
+          },
+          {
+            "Name": "create-exception-topic",
+            "Properties": {
+              "DefaultMessageTimeToLive": "PT1H",
+              "DuplicateDetectionHistoryTimeWindow": "PT20S",
+              "RequiresDuplicateDetection": false
+            },
+            "Subscriptions": [
+              {
+                "Name": "create-exception-sub",
+                "Properties": {
                   "DeadLetteringOnMessageExpiration": false,
                   "DefaultMessageTimeToLive": "PT1H",
                   "LockDuration": "PT1M",

@@ -13,6 +13,8 @@ using Model;
 using Microsoft.Extensions.Options;
 using DataServices.Client;
 using Model.Constants;
+using Common.Interfaces;
+using NHS.CohortManager.Tests.TestUtils;
 
 [TestClass]
 public class ReceiveServiceNowMessageFunctionTests
@@ -92,6 +94,7 @@ public class ReceiveServiceNowMessageFunctionTests
 
         // Assert
         Assert.AreEqual(HttpStatusCode.Accepted, result.StatusCode);
+
     }
 
     [TestMethod]
@@ -284,4 +287,5 @@ public class ReceiveServiceNowMessageFunctionTests
 
         return JsonSerializer.Serialize(obj);
     }
+
 }

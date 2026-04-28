@@ -17,7 +17,7 @@ namespace DataServices.Migrations.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -730,6 +730,61 @@ namespace DataServices.Migrations.Migrations
                     b.HasKey("SubscriptionId");
 
                     b.ToTable("NEMS_SUBSCRIPTION", "dbo");
+                });
+
+            modelBuilder.Entity("Model.ParticipantAuditLog", b =>
+                {
+                    b.Property<long>("AuditId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("AUDIT_ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("AuditId"));
+
+                    b.Property<Guid?>("BatchId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("BATCH_ID");
+
+                    b.Property<Guid>("CorrelationId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CORRELATION_ID");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("CREATED_BY");
+
+                    b.Property<DateTime>("CreatedDatetime")
+                        .HasColumnType("datetime2(7)")
+                        .HasColumnName("DATE_CREATED");
+
+                    b.Property<string>("NhsNumber")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("NHS_NUMBER");
+
+                    b.Property<string>("RawDataRef")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)")
+                        .HasColumnName("RAW_DATA_REF");
+
+                    b.Property<int>("RecordSource")
+                        .HasColumnType("int")
+                        .HasColumnName("RECORD_SOURCE");
+
+                    b.Property<string>("RecordSourceDesc")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("RECORD_SOURCE_DESC");
+
+                    b.Property<int?>("ScreeningId")
+                        .HasColumnType("int")
+                        .HasColumnName("SCREENING_ID");
+
+                    b.HasKey("AuditId");
+
+                    b.ToTable("PARTICIPANT_AUDIT_LOG", "dbo");
                 });
 
             modelBuilder.Entity("Model.ParticipantDemographic", b =>

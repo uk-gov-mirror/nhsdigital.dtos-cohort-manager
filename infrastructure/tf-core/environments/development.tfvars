@@ -348,6 +348,7 @@ function_apps = {
         maxNumberOfChecks          = "50"
         recordThresholdForBatching = "3"
         ParticipantManagementTopic = "participant-management"
+        AuditTopicName             = "participant-audit-topic"
         AllowDeleteRecords         = true
       }
       storage_containers = [
@@ -485,6 +486,7 @@ function_apps = {
         ServiceNowParticipantManagementTopic    = "servicenow-participant-management" # Subscribes to the servicenow participant management topic
         ManageServiceNowParticipantSubscription = "ManageServiceNowParticipant"       # Subscribes to the servicenow participant management topic
         CohortDistributionTopic                 = "cohort-distribution"
+        AuditTopicName                          = "participant-audit-topic"
       }
     }
 
@@ -585,6 +587,7 @@ function_apps = {
       function_endpoint_name = "GetValidationExceptions"
       app_service_plan_key   = "NonScaling"
       db_connection_string   = "DtOsDatabaseConnectionString"
+      key_vault_url          = "KeyVaultConnectionString"
       app_urls = [
         {
           env_var_name     = "DemographicDataServiceURL"
@@ -601,6 +604,7 @@ function_apps = {
       ]
       env_vars_static = {
         AcceptableLatencyThresholdMs = "500"
+        UserInfoUrl                  = "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
       }
     }
 
@@ -990,7 +994,7 @@ function_apps = {
         # ServiceNowRefreshAccessTokenUrl    = "https://ca-wiremock-uksouth.jollyriver-9baa4a9a.uksouth.azurecontainerapps.io/oauth_token.do"
         # ServiceNowUpdateUrl                = "https://ca-wiremock-uksouth.jollyriver-9baa4a9a.uksouth.azurecontainerapps.io/api/x_nhsd_intstation/nhs_integration/9c78f87c97912e10dd80f2df9153aff5/CohortCaseUpdate"
         # ServiceNowResolutionUrl            = "https://ca-wiremock-uksouth.jollyriver-9baa4a9a.uksouth.azurecontainerapps.io/api/x_nhsd_intstation/nhs_integration/9c78f87c97912e10dd80f2df9153aff5/CohortCaseResolution"
-        
+
         # Connect to ServiceNow Integration Instance (can be swapped for Wiremock for testing, or to ServiceNow Dev Instance if we want to align the environments correctly)
         ServiceNowRefreshAccessTokenUrl      = "https://nhsdigitaltraining.service-now.com/oauth_token.do"
         ServiceNowUpdateUrl                  = "https://nhsdigitaltraining.service-now.com/api/x_nhsd_intstation/nhs_integration/9c78f87c97912e10dd80f2df9153aff5/CohortCaseUpdate"
@@ -1193,6 +1197,18 @@ function_apps = {
         }
       ]
     }
+
+    AuditWriter = {
+      name_suffix             = "audit-writer"
+      function_endpoint_name  = "AuditWriter"
+      app_service_plan_key    = "NonScaling"
+      db_connection_string    = "DtOsDatabaseConnectionString"
+      service_bus_connections = ["internal"]
+      env_vars_static = {
+        AuditTopicName    = "participant-audit-topic"
+        AuditSubscription = "AuditWriter"
+      }
+    }
   }
 }
 
@@ -1304,6 +1320,10 @@ service_bus = {
       servicenow-participant-management = {
         batched_operations_enabled = true
         subscribers                = ["ManageServiceNowParticipant"]
+      }
+      participant-audit-topic = {
+        batched_operations_enabled = true
+        subscribers                = ["AuditWriter"]
       }
     }
   }
