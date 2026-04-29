@@ -11,6 +11,10 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
+jest.mock("./auth", () => ({
+  auth: jest.fn().mockResolvedValue(null),
+}));
+
 const mockSafeParse = jest.fn();
 jest.mock("./formValidationSchemas", () => {
   return {
