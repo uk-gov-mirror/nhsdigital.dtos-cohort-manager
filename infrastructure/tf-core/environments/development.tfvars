@@ -1158,6 +1158,19 @@ function_apps = {
       }
     }
 
+    ReferenceDataUpdater = {
+      name_suffix             = "reference-data-updater"
+      function_endpoint_name  = "ReferenceDataUpdater"
+      app_service_plan_key    = "NonScaling"
+      db_connection_string    = "DtOsDatabaseConnectionString"
+      service_bus_connections = ["external"]
+      env_vars_static = {
+        ReferenceDataTopicName    = "reference-data-updates"
+        ReferenceDataSubscription = "ReferenceDataUpdater"
+        SeedDataBlobContainer     = "seed-data"
+      }
+    }
+
     NemsSubscribe = {
       name_suffix            = "nems-subscribe"
       function_endpoint_name = "NemsSubscribe"
@@ -1340,6 +1353,19 @@ service_bus = {
       participant-audit-topic = {
         batched_operations_enabled = true
         subscribers                = ["AuditWriter"]
+      }
+    }
+  }
+
+  external = {
+    capacity         = 1
+    sku_tier         = "Premium"
+    max_payload_size = "100mb"
+    topics = {
+      reference-data-updates = {
+        batched_operations_enabled = true
+        max_delivery_count         = 10
+        subscribers                = ["ReferenceDataUpdater"]
       }
     }
   }
