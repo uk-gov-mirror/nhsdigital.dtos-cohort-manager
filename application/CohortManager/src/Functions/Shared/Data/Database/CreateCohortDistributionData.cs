@@ -41,7 +41,7 @@ public class CreateCohortDistributionData : ICreateCohortDistributionData
         {
 
             participantsToBeExtracted = (await _cohortDistributionDataServiceClient.GetByFilter(x => x.IsExtracted.Equals(0) && x.RequestId == Guid.Empty,
-            x => x.RecordUpdateDateTime ?? x.RecordInsertDateTime,rowCount)).ToList();
+            x => x.RecordUpdateDateTime ?? x.RecordInsertDateTime ?? DateTime.MinValue,rowCount)).ToList();
 
         }
 
