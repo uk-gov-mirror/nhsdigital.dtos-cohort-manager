@@ -45,7 +45,6 @@ public class CreateCohortDistributionData : ICreateCohortDistributionData
 
         }
 
-        //TODO do this filtering on the data services
         var CohortDistributionParticipantList = participantsToBeExtracted.Select(x => new CohortDistributionParticipant(x)).ToList();
 
 
