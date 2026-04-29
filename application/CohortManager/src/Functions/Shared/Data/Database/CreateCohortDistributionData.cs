@@ -39,8 +39,12 @@ public class CreateCohortDistributionData : ICreateCohortDistributionData
         }
         else
         {
-            var participantsList = await _cohortDistributionDataServiceClient.GetByFilter(x => x.IsExtracted.Equals(0) && x.RequestId == Guid.Empty);
-            participantsToBeExtracted = participantsList.OrderBy(x => x.RecordUpdateDateTime ?? x.RecordInsertDateTime).Take(rowCount).ToList();
+            // var participantsList = await _cohortDistributionDataServiceClient.GetByFilter(x => x.IsExtracted.Equals(0) && x.RequestId == Guid.Empty);
+            // participantsToBeExtracted = participantsList.OrderBy(x => x.RecordUpdateDateTime ?? x.RecordInsertDateTime).Take(rowCount).ToList();
+
+            participantsToBeExtracted = (await _cohortDistributionDataServiceClient.GetByFilter(x => x.IsExtracted.Equals(0) && x.RequestId == Guid.Empty,
+            x => x.RecordUpdateDateTime ?? x.RecordInsertDateTime,rowCount)).ToList();
+
         }
 
         //TODO do this filtering on the data services

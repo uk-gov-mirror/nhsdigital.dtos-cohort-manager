@@ -30,6 +30,13 @@ public interface IDataServiceClient<TEntity>
     /// <summary>
     /// Adds a given records to the database
     /// </summary>
+    /// <param name="predicate">linq query defining the filter on the table</param>
+    /// <param name="orderBy">query defining the order</param>
+    /// <param name="take">number of records to take from the filtered result</param>
+    Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int take);
+    /// <summary>
+    /// Adds a given records to the database
+    /// </summary>
     /// <param name="entity">object of type TEntity to be inserted in the database</param>
     /// <returns>a boolean representing if the record was inserted successfully</returns>
     Task<bool> Add(TEntity entity);

@@ -3,7 +3,6 @@ namespace Common;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-// TODO: move to Shared/Utilities
 public static class ReflectionUtilities
 {
     /// <summary>

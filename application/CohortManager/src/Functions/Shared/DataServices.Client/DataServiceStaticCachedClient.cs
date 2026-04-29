@@ -77,6 +77,18 @@ public class DataServiceStaticCachedClient<TEntity> : IDataServiceClient<TEntity
         return _data.Where(predicateFunction).ToList();
     }
 
+    public async Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int take)
+    {
+
+        _logger.LogInformation("Getting By Filter ordered from static data service {EntityName}", typeof(TEntity).FullName);
+        await Task.CompletedTask;
+
+        var predicateFunction = predicate.Compile();
+        var orderByFunction = orderBy.Compile();
+        return _data.Where(predicateFunction).OrderBy(orderByFunction).Take(take).ToList();
+
+    }
+
     public Task<bool> Add(TEntity entity)
     {
         throw new NotImplementedException();

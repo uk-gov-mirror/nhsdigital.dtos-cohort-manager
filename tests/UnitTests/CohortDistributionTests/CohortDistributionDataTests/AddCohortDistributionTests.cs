@@ -30,6 +30,10 @@ public class AddCohortDistributionTests
             .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<CohortDistribution, bool>>>()))
             .ReturnsAsync((Expression<Func<CohortDistribution, bool>> filter) =>
                 _participantList.Where(filter.Compile()).ToList());
+        _cohortDistributionDataServiceClient
+            .Setup(x => x.GetByFilter(It.IsAny<Expression<Func<CohortDistribution, bool>>>(), It.IsAny<Expression<Func<CohortDistribution, object>>>(), It.IsAny<int>()))
+            .ReturnsAsync((Expression<Func<CohortDistribution, bool>> filter, Expression<Func<CohortDistribution, object>> orderBy, int take) =>
+                _participantList.Where(filter.Compile()).OrderBy(orderBy.Compile()).Take(take).ToList());
 
         _cohortDistributionDataServiceClient
             .Setup(x => x.GetSingle(It.IsAny<string>()))

@@ -48,6 +48,15 @@ public class DataServiceClient<TEntity> : IDataServiceClient<TEntity> where TEnt
         return result;
     }
 
+    public async Task<IEnumerable<TEntity>> GetByFilter(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int take)
+    {
+
+        var result = await GetByFilter(predicate);
+        var orderByFunction = orderBy.Compile();
+        return result.OrderBy(orderByFunction).Take(take).ToList();
+
+    }
+
     public virtual async Task<TEntity> GetSingle(string id)
     {
         try
