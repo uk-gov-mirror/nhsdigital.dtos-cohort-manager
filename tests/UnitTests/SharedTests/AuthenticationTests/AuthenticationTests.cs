@@ -18,7 +18,6 @@ public class AuthenticationTests
         var logger = new Mock<ILogger<Cis2AuthMiddleware>>();
         var createResponse = new Mock<ICreateResponse>();
         var authService = new Mock<IAuthenticationService>();
-        var cis2UserService = new Mock<ICis2UserService>();
         var options = Options.Create(new AuthConfig
         {
             AuthMetaDataUrl = "https://example.com/.well-known/openid-configuration",
@@ -26,8 +25,9 @@ public class AuthenticationTests
             UserInfoUrl = "https://example.com/userinfo",
             ByPassAuthentication = true
         });
+        var authResolver = new Mock<IFunctionContextAuthResolver>();
 
-        var sut = new Cis2AuthMiddleware(logger.Object, createResponse.Object, authService.Object, cis2UserService.Object, options);
+        var sut = new Cis2AuthMiddleware(logger.Object, createResponse.Object, authService.Object, options, authResolver.Object);
         var context = new Mock<FunctionContext>();
         var nextCalled = false;
         FunctionExecutionDelegate next = _ =>
@@ -50,6 +50,7 @@ public class AuthenticationTests
         var createResponse = new Mock<ICreateResponse>();
         var roleManager = new Mock<IRoleManager>();
         var logger = new Mock<ILogger<PermissionsMiddleware>>();
+        var authresolver = new Mock<IFunctionContextAuthResolver>();
         var options = Options.Create(new AuthConfig
         {
             AuthMetaDataUrl = "https://example.com/.well-known/openid-configuration",
@@ -58,7 +59,7 @@ public class AuthenticationTests
             ByPassAuthentication = true
         });
 
-        var sut = new PermissionsMiddleware(createResponse.Object, roleManager.Object, logger.Object, options);
+        var sut = new PermissionsMiddleware(createResponse.Object, roleManager.Object, logger.Object, options, authresolver.Object);
         var context = new Mock<FunctionContext>();
         var nextCalled = false;
         FunctionExecutionDelegate next = _ =>

@@ -26,6 +26,7 @@ public class ReceiveRemoveDummyGpCodeFunction
     private readonly IQueueClient _queueClient;
     private readonly RemoveDummyGpCodeConfig _config;
     private readonly IAuditLogClient _auditLogClient;
+    private readonly IFunctionContextAuthResolver _authResolver;
 
     private static readonly Regex NonLetterRegex = new(@"[^\p{Lu}\p{Ll}\p{Lt}]", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
@@ -35,7 +36,8 @@ public class ReceiveRemoveDummyGpCodeFunction
         IHttpClientFunction httpClientFunction,
         IQueueClient queueClient,
         IOptions<RemoveDummyGpCodeConfig> config,
-        IAuditLogClient auditLogClient)
+        IAuditLogClient auditLogClient,
+        IFunctionContextAuthResolver authResolver)
     {
         _logger = logger;
         _createResponse = createResponse;
@@ -43,6 +45,7 @@ public class ReceiveRemoveDummyGpCodeFunction
         _queueClient = queueClient;
         _config = config.Value;
         _auditLogClient = auditLogClient;
+        _authResolver = authResolver;
     }
 
     /// <summary>
@@ -61,9 +64,10 @@ public class ReceiveRemoveDummyGpCodeFunction
                 return _createResponse.CreateHttpResponse(HttpStatusCode.BadRequest, req);
             }
 
-            var user = req.FunctionContext.GetUser();
 
-            if(user == null && !req.FunctionContext.RequiresAuthentication())
+            var user = _authResolver.GetCis2User(req.FunctionContext);
+
+            if(user == null && _authResolver.IsAuthenticationRequired(req.FunctionContext))
             {
                 _logger.LogError("User information could not be retrieved from the function context");
                 return _createResponse.CreateHttpResponse(HttpStatusCode.InternalServerError, req);

@@ -1,6 +1,7 @@
 namespace Common;
 
 using System.Net;
+using System.Runtime.CompilerServices;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
@@ -15,18 +16,20 @@ public class Cis2AuthMiddleware : IFunctionsWorkerMiddleware
     private readonly ICreateResponse _createResponse;
     private readonly IAuthenticationService _authService;
     private readonly AuthConfig _authConfig;
+    private readonly IFunctionContextAuthResolver _authResolver;
 
-    public Cis2AuthMiddleware(ILogger<Cis2AuthMiddleware> logger, ICreateResponse createResponse, IAuthenticationService authService, IOptions<AuthConfig> authConfig)
+    public Cis2AuthMiddleware(ILogger<Cis2AuthMiddleware> logger , ICreateResponse createResponse, IAuthenticationService authService, IOptions<AuthConfig> authConfig, IFunctionContextAuthResolver authResolver)
     {
         _logger = logger;
         _createResponse = createResponse;
         _authService = authService;
         _authConfig = authConfig.Value;
+        _authResolver = authResolver;
     }
 
     public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
     {
-        if(_authConfig.ByPassAuthentication || !context.RequiresAuthentication())
+        if(_authConfig.ByPassAuthentication || !_authResolver.IsAuthenticationRequired(context))
         {
             _logger.LogInformation("Authentication is bypassed or not required for this endpoint, skipping authentication.");
             await next(context);

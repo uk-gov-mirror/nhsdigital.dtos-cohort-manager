@@ -1,5 +1,6 @@
 namespace Common;
 
+using Hl7.Fhir.Model.CdsHooks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -19,6 +20,7 @@ public static class AuthenticationExtension
             });
             hostBuilder.ConfigureServices((context, services) =>
             {
+                services.AddSingleton<IFunctionContextAuthResolver, FunctionContextAuthResolver>();
                 services.AddSingleton<IAuthenticationService, JwtAuthentication>();
                 services.AddScoped<ICis2UserService,Cis2UserService>();
                 services.AddSingleton<IRoleManager, RoleManager>();

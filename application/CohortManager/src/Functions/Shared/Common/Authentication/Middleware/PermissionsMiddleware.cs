@@ -12,13 +12,15 @@ public class PermissionsMiddleware : IFunctionsWorkerMiddleware
     private readonly IRoleManager _roleManager;
     private readonly ILogger<PermissionsMiddleware> _logger;
     private readonly AuthConfig _authConfig;
+    private readonly IFunctionContextAuthResolver _authResolver;
 
-    public PermissionsMiddleware(ICreateResponse createResponse, IRoleManager roleManager, ILogger<PermissionsMiddleware> logger, IOptions<AuthConfig> authConfig)
+    public PermissionsMiddleware(ICreateResponse createResponse, IRoleManager roleManager, ILogger<PermissionsMiddleware> logger, IOptions<AuthConfig> authConfig, IFunctionContextAuthResolver authResolver)
     {
         _createResponse = createResponse;
         _roleManager = roleManager;
         _logger = logger;
         _authConfig = authConfig.Value;
+        _authResolver = authResolver;
      }
 
     public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
@@ -30,13 +32,13 @@ public class PermissionsMiddleware : IFunctionsWorkerMiddleware
             return;
         }
 
-        if (!context.RequiresAuthentication())
+        if (!_authResolver.IsAuthenticationRequired(context))
         {
             _logger.LogInformation("No authentication required for this endpoint, skipping permissions check.");
             await next(context);
             return;
         }
-        var requiredRoles = context.GetRequiredRoles();
+        var requiredRoles = _authResolver.GetRequiredRoles(context);
 
         if(requiredRoles.Length == 0)
         {

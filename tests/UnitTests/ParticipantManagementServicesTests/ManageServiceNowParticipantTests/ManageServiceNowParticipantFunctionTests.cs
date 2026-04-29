@@ -64,8 +64,7 @@ public class ManageServiceNowParticipantFunctionTests
             _httpClientFunctionMock.Object,
             _handleExceptionMock.Object,
             _dataServiceClientMock.Object,
-            _queueClientMock.Object,
-            _auditLogClientMock.Object
+            _queueClientMock.Object
         );
 
         _messageType1Request = JsonSerializer.Serialize(new SendServiceNowMessageRequestBody

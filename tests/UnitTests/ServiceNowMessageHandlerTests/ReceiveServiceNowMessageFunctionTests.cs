@@ -28,6 +28,7 @@ public class ReceiveServiceNowMessageFunctionTests
     private Mock<IDataServiceClient<ServicenowCase>> _mockServiceNowCasesClient = new();
     private readonly Mock<IServiceNowClient> _mockServiceNowClient = new();
     private readonly ReceiveServiceNowMessageFunction _function;
+    private readonly Mock<IAuditLogClient> _mockAuditLogClient = new();
 
     public ReceiveServiceNowMessageFunctionTests()
     {
@@ -45,7 +46,7 @@ public class ReceiveServiceNowMessageFunctionTests
             ServiceNowParticipantManagementTopic = "servicenow-participant-management-topic",
             ServiceNowAssignmentGroup = "ITO Breast Screening 2nd Line"
         });
-        _function = new ReceiveServiceNowMessageFunction(_mockLogger.Object, _createResponse, _mockQueueClient.Object, _mockConfig.Object, _mockServiceNowCasesClient.Object, _mockServiceNowClient.Object);
+        _function = new ReceiveServiceNowMessageFunction(_mockLogger.Object, _createResponse, _mockQueueClient.Object, _mockConfig.Object, _mockServiceNowCasesClient.Object, _mockServiceNowClient.Object, _mockAuditLogClient.Object);
         _mockHttpRequest = new Mock<HttpRequestData>(_mockContext.Object);
 
         _mockHttpRequest.Setup(r => r.CreateResponse()).Returns(() =>

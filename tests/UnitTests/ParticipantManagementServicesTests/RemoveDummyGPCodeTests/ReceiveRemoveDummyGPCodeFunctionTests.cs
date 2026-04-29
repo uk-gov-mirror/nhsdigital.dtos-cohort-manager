@@ -22,9 +22,12 @@ public class ReceiveRemoveDummyGpCodeFunctionTests
     private readonly CreateResponse _createResponse = new();
     private readonly Mock<IHttpClientFunction> _httpClientFunctionMock = new();
     private readonly Mock<IQueueClient> _queueClientMock = new();
+    private readonly Mock<IAuditLogClient> _auditLogClientMock = new();
     private readonly Mock<IOptions<RemoveDummyGpCodeConfig>> _configMock = new();
-    private readonly Mock<FunctionContext> _contextMock = new();
+    private readonly Mock<FunctionContext> _functionContextMock = new();
+    private readonly Mock<FunctionDefinition> _functionDefinitionMock = new();
     private readonly Mock<HttpRequestData> _httpRequestMock;
+    private readonly Mock<IFunctionContextAuthResolver> _authResolverMock = new();
     private readonly ReceiveRemoveDummyGpCodeFunction _function;
 
     public ReceiveRemoveDummyGpCodeFunctionTests()
@@ -41,12 +44,20 @@ public class ReceiveRemoveDummyGpCodeFunctionTests
             _createResponse,
             _httpClientFunctionMock.Object,
             _queueClientMock.Object,
-            _configMock.Object);
+            _configMock.Object,
+            _auditLogClientMock.Object,
+            _authResolverMock.Object);
 
-        _httpRequestMock = new Mock<HttpRequestData>(_contextMock.Object);
+        _authResolverMock.Setup(x => x.IsAuthenticationRequired(It.IsAny<FunctionContext>())).Returns(false);
+        _authResolverMock.Setup(x => x.GetCis2User(It.IsAny<FunctionContext>())).Returns((Cis2User?)null);
+        _functionContextMock.SetupGet(c => c.Items).Returns(new Dictionary<object, object>());
+        _functionDefinitionMock.SetupGet(fd => fd.EntryPoint).Returns(string.Empty);
+        _functionContextMock.SetupGet(c => c.FunctionDefinition).Returns(_functionDefinitionMock.Object);
+
+        _httpRequestMock = new Mock<HttpRequestData>(_functionContextMock.Object);
         _httpRequestMock.Setup(r => r.CreateResponse()).Returns(() =>
         {
-            var response = new Mock<HttpResponseData>(_contextMock.Object);
+            var response = new Mock<HttpResponseData>(_functionContextMock.Object);
             response.SetupProperty(r => r.Headers, new HttpHeadersCollection());
             response.SetupProperty(r => r.StatusCode);
             response.SetupProperty(r => r.Body, new MemoryStream());
@@ -102,6 +113,7 @@ public class ReceiveRemoveDummyGpCodeFunctionTests
             .ReturnsAsync(true)
             .Verifiable();
 
+
         // Act
         var result = await _function.Run(_httpRequestMock.Object);
 
@@ -131,7 +143,7 @@ public class ReceiveRemoveDummyGpCodeFunctionTests
         // Assert
         Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         using var reader = new StreamReader(result.Body);
-        
+
         _httpClientFunctionMock.VerifyNoOtherCalls();
         _queueClientMock.VerifyNoOtherCalls();
     }
@@ -162,7 +174,7 @@ public class ReceiveRemoveDummyGpCodeFunctionTests
         // Assert
         Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         using var reader = new StreamReader(result.Body);
-        
+
         _queueClientMock.VerifyNoOtherCalls();
     }
 
@@ -203,7 +215,7 @@ public class ReceiveRemoveDummyGpCodeFunctionTests
         // Assert
         Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         using var reader = new StreamReader(result.Body);
-        
+
         _queueClientMock.VerifyNoOtherCalls();
     }
 
@@ -262,7 +274,7 @@ public class ReceiveRemoveDummyGpCodeFunctionTests
         // Assert
         Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         using var reader = new StreamReader(result.Body);
-        
+
         _httpClientFunctionMock.VerifyNoOtherCalls();
         _queueClientMock.VerifyNoOtherCalls();
     }
@@ -288,7 +300,7 @@ public class ReceiveRemoveDummyGpCodeFunctionTests
         // Assert
         Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         using var reader = new StreamReader(result.Body);
-        
+
         _httpClientFunctionMock.VerifyNoOtherCalls();
         _queueClientMock.VerifyNoOtherCalls();
     }
@@ -381,7 +393,7 @@ public class ReceiveRemoveDummyGpCodeFunctionTests
         // Assert
         Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         using var reader = new StreamReader(result.Body);
-       
+
         _queueClientMock.VerifyNoOtherCalls();
     }
 
