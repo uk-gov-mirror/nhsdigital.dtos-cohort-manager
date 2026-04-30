@@ -79,7 +79,7 @@ public class ReceiveRemoveDummyGpCodeFunction
                 Source = AuditSource.DummyGpRemoval,
                 RecordSourceDesc = "Dummy GP Code Removal Form",
                 CreatedBy = user != null ? user.Uid : "Unknown User",
-                ScreeningId = 1,
+                ScreeningId = (int)ServiceProvider.BSS,
                 RequestSnapshot = requestBody
 
             });
