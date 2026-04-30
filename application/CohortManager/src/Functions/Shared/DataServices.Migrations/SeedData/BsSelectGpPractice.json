@@ -72970,5 +72970,14 @@
     "AuditCreatedTimeStamp": "2025-09-22T14:21:06.033",
     "AuditLastUpdatedTimeStamp": "2025-09-22T14:21:06.033",
     "AuditText": "From PostgreSQL"
+  },
+  {
+    "GpPracticeCode": "Y03152",
+    "BsoCode": "AGA",
+    "CountryCategory": "ENGLAND",
+    "AuditId": 1.00,
+    "AuditCreatedTimeStamp": "2026-04-29T11:45:00.000",
+    "AuditLastUpdatedTimeStamp": "2026-04-29T11:45:00.000",
+    "AuditText": "From PostgreSQL"
   }
 ]
