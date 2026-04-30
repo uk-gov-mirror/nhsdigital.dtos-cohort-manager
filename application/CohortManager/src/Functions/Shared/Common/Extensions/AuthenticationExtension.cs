@@ -9,6 +9,10 @@ public static class AuthenticationExtension
     {
 
         hostBuilder.AddConfiguration<AuthConfig>(out var authConfig);
+        hostBuilder.ConfigureServices((context, services) =>
+        {
+            services.AddSingleton<IFunctionContextAuthResolver, FunctionContextAuthResolver>();
+        });
         if(!authConfig.ByPassAuthentication)
         {
             hostBuilder.AddConfiguration<RoleConfig>();
@@ -19,7 +23,7 @@ public static class AuthenticationExtension
             });
             hostBuilder.ConfigureServices((context, services) =>
             {
-                services.AddSingleton<IFunctionContextAuthResolver, FunctionContextAuthResolver>();
+
                 services.AddSingleton<IAuthenticationService, JwtAuthentication>();
                 services.AddScoped<ICis2UserService,Cis2UserService>();
                 services.AddSingleton<IRoleManager, RoleManager>();
