@@ -107,7 +107,7 @@ public class ReferenceDataInsertHandler : IReferenceDataInsertHandler
         }
         catch (DbUpdateException ex) when (IsPrimaryKeyViolation(ex))
         {
-            _logger.LogWarning("Duplicate record detected for type {DataType}. Skipping insert.", dataType);
+            _logger.LogWarning(ex, "Duplicate record detected for type {DataType}. Skipping insert.", dataType);
             return false;
         }
         catch (Exception ex)
