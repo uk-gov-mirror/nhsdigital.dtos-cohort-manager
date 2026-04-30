@@ -14,7 +14,7 @@ public static class AuditExtension
             services.AddTransient<IAuditLogClient, AuditLogClient>();
         });
 
-        hostBuilder.AddConfiguration<AuditClientConfig>(out var auditConfig);
+        hostBuilder.AddConfiguration<AuditClientConfig>();
 
         return hostBuilder
             .AddServiceBusClient(serviceBusConnectionString);
