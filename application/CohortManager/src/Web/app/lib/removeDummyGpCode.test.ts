@@ -25,14 +25,20 @@ jest.mock("./formValidationSchemas", () => {
 });
 
 import { removeDummyGpCode } from "./removeDummyGpCode";
+import { auth } from "./auth";
 import { redirect } from "next/navigation";
 
 const mockRedirect = redirect as jest.MockedFunction<typeof redirect>;
+const mockAuth = auth as jest.MockedFunction<typeof auth>;
 
 describe("removeDummyGpCode", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.REMOVE_DUMMY_GP_CODE_API_URL = "https://api.example.com";
+    mockAuth.mockResolvedValue({
+      idToken: "id-token",
+      accessToken: "access-token",
+    } as Awaited<ReturnType<typeof auth>>);
     global.fetch = jest.fn();
   });
 
@@ -167,6 +173,8 @@ describe("removeDummyGpCode", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: "Bearer id-token",
+            "X-Access-Token": "Bearer access-token",
           },
           body: JSON.stringify({
             nhs_number: "1234567890",
@@ -210,6 +218,64 @@ describe("removeDummyGpCode", () => {
   });
 
   describe("unexpected errors", () => {
+    it("returns session error when auth tokens are missing", async () => {
+      mockSafeParse.mockReturnValue({
+        success: true,
+        data: {
+          nhsNumber: "1234567890",
+          forename: "Jane",
+          surname: "Smith",
+          dateOfBirth: "1990-01-15",
+          serviceNowTicketNumber: "CS1234567",
+        },
+      });
+
+      mockAuth.mockResolvedValue({
+        idToken: undefined,
+        accessToken: "access-token",
+      } as Awaited<ReturnType<typeof auth>>);
+
+      const formData = createFormData();
+      const result = await removeDummyGpCode(null, formData);
+
+      expect(result).toEqual({
+        error: "Your session has expired or is invalid. Please sign in again.",
+        values: expect.objectContaining({ nhsNumber: "1234567890" }),
+      });
+      expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it("returns session error for 401/403 responses", async () => {
+      mockSafeParse.mockReturnValue({
+        success: true,
+        data: {
+          nhsNumber: "1234567890",
+          forename: "Jane",
+          surname: "Smith",
+          dateOfBirth: "1990-01-15",
+          serviceNowTicketNumber: "CS1234567",
+        },
+      });
+
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce({ status: 401 })
+        .mockResolvedValueOnce({ status: 403 });
+
+      const formData = createFormData();
+      const firstResult = await removeDummyGpCode(null, formData);
+      const secondResult = await removeDummyGpCode(null, formData);
+
+      expect(firstResult).toEqual({
+        error: "Your session has expired or is invalid. Please sign in again.",
+        values: expect.objectContaining({ nhsNumber: "1234567890" }),
+      });
+      expect(secondResult).toEqual({
+        error: "Your session has expired or is invalid. Please sign in again.",
+        values: expect.objectContaining({ nhsNumber: "1234567890" }),
+      });
+    });
+
     it("returns error state with generic message on non-202/non-400 response", async () => {
       mockSafeParse.mockReturnValue({
         success: true,

@@ -77,10 +77,15 @@ export async function removeDummyGpCode(
     "Content-Type": "application/json",
   };
 
-  if (bearerToken && accessToken) {
-    headers.Authorization = `Bearer ${bearerToken}`;
-    headers["X-Access-Token"] = `Bearer ${accessToken}`;
+  if (!bearerToken || !accessToken) {
+    return {
+      error: "Your session has expired or is invalid. Please sign in again.",
+      values: submittedValues,
+    };
   }
+
+  headers.Authorization = `Bearer ${bearerToken}`;
+  headers["X-Access-Token"] = `Bearer ${accessToken}`;
 
   let response: Response;
   try {
@@ -105,6 +110,13 @@ export async function removeDummyGpCode(
 
   if (response.status === 400) {
     return { error: "The participant could not be found or the details provided do not match", values: submittedValues };
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    return {
+      error: "Your session has expired or is invalid. Please sign in again.",
+      values: submittedValues,
+    };
   }
 
   return { error: "An unexpected error occurred. Please try again later.", values: submittedValues };
