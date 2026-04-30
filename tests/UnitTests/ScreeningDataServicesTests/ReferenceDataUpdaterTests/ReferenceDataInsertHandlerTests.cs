@@ -112,11 +112,12 @@ public class ReferenceDataInsertHandlerTests
     }
 
     [TestMethod]
-    public async Task ProcessRecord_PrimaryKeyViolation_ReturnsTrue()
+    public async Task ProcessRecord_PrimaryKeyViolation_ReturnsFalse()
     {
         // Arrange
         var data = CreatePayload(new { LanguageCodeId = "EN", LanguageDescription = "English" });
-        var dbUpdateException = new DbUpdateException("An error occurred", new Exception("Violation of PRIMARY KEY constraint"));
+        var sqlException = new SqlExceptionWithNumber(2627);
+        var dbUpdateException = new DbUpdateException("An error occurred", sqlException);
 
         var accessorMock = new Mock<IDataServiceAccessor<LanguageCode>>();
         accessorMock.Setup(a => a.InsertSingle(It.IsAny<LanguageCode>())).ThrowsAsync(dbUpdateException);
@@ -128,15 +129,16 @@ public class ReferenceDataInsertHandlerTests
         var result = await _handler.ProcessRecord("LanguageCode", data);
 
         // Assert
-        Assert.IsTrue(result);
+        Assert.IsFalse(result);
     }
 
     [TestMethod]
-    public async Task ProcessRecord_UniqueConstraintViolation_ReturnsTrue()
+    public async Task ProcessRecord_UniqueConstraintViolation_ReturnsFalse()
     {
         // Arrange
         var data = CreatePayload(new { GenderCode = "M" });
-        var dbUpdateException = new DbUpdateException("An error occurred", new Exception("unique constraint violation on table"));
+        var sqlException = new SqlExceptionWithNumber(2601);
+        var dbUpdateException = new DbUpdateException("An error occurred", sqlException);
 
         var accessorMock = new Mock<IDataServiceAccessor<GenderMaster>>();
         accessorMock.Setup(a => a.InsertSingle(It.IsAny<GenderMaster>())).ThrowsAsync(dbUpdateException);
@@ -148,7 +150,7 @@ public class ReferenceDataInsertHandlerTests
         var result = await _handler.ProcessRecord("GenderMaster", data);
 
         // Assert
-        Assert.IsTrue(result);
+        Assert.IsFalse(result);
     }
 
     [TestMethod]
@@ -259,7 +261,7 @@ public class ReferenceDataInsertHandlerTests
     }
 
     [TestMethod]
-    public async Task ProcessRecord_InsertSingleReturnsFalse_ReturnsTrue()
+    public async Task ProcessRecord_InsertSingleReturnsFalse_ReturnsFalse()
     {
         // Arrange
         var data = CreatePayload(new { GpPracticeCode = "Y99999" });
@@ -270,6 +272,11 @@ public class ReferenceDataInsertHandlerTests
         var result = await _handler.ProcessRecord("BsSelectGpPractice", data);
 
         // Assert
-        Assert.IsTrue(result);
+        Assert.IsFalse(result);
     }
+}
+
+internal class SqlExceptionWithNumber(int number) : Exception($"SQL error {number}")
+{
+    public int Number { get; } = number;
 }
