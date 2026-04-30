@@ -79,7 +79,7 @@ public class ReceiveRemoveDummyGpCodeFunction
                 NhsNumber = requestBody.NhsNumber,
                 Source = AuditSource.DummyGpRemoval,
                 RecordSourceDesc = "Dummy GP Code Removal Form",
-                CreatedBy = user != null ? $"{user.GivenName} {user.FamilyName}" : "Unknown User",
+                CreatedBy = user != null ? user.Uid : "Unknown User",
                 ScreeningId = 1,
                 RequestSnapshot = requestBody
 
