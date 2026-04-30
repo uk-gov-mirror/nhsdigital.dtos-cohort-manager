@@ -1,6 +1,5 @@
 namespace Common;
 
-using Hl7.Fhir.Model.CdsHooks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
