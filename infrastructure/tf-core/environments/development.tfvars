@@ -537,6 +537,7 @@ function_apps = {
         }
       ]
       env_vars_static = {
+        AuditTopicName                       = "participant-audit-topic"
         ServiceNowParticipantManagementTopic = "servicenow-participant-management"
         UserInfoUrl                          = "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
       }
