@@ -1,7 +1,6 @@
 namespace Common;
 
 using System.Net;
-using System.Runtime.CompilerServices;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
