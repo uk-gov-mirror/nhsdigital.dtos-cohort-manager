@@ -67,10 +67,10 @@ public class ReceiveRemoveDummyGpCodeFunction
 
             var user = _authResolver.GetCis2User(req.FunctionContext);
 
-            if(user == null && _authResolver.IsAuthenticationRequired(req.FunctionContext))
+            if (user == null && _authResolver.IsAuthenticationRequired(req.FunctionContext))
             {
-                _logger.LogError("User information could not be retrieved from the function context");
-                return _createResponse.CreateHttpResponse(HttpStatusCode.InternalServerError, req);
+                _logger.LogWarning("Authentication is required but user information could not be retrieved from the function context");
+                return _createResponse.CreateHttpResponse(HttpStatusCode.Unauthorized, req);
             }
 
 
