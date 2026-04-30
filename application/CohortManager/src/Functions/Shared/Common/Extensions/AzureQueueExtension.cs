@@ -83,4 +83,9 @@ public static class AzureQueueExtension
         return hostBuilder;
     }
 
+    public static IHostBuilder AddKeyedAzureQueues(this IHostBuilder hostBuilder, string serviceBusConnectionString, string keyName)
+    {
+        return AddKeyedAzureQueues(hostBuilder, true, serviceBusConnectionString, keyName);
+    }
+
 }

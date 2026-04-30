@@ -17,6 +17,6 @@ public static class AuditExtension
         hostBuilder.AddConfiguration<AuditClientConfig>();
 
         return hostBuilder
-            .AddServiceBusClient(serviceBusConnectionString);
+            .AddKeyedAzureQueues(serviceBusConnectionString, "AuditWriter");
     }
 }

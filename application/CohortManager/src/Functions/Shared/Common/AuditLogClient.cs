@@ -1,5 +1,6 @@
 namespace Common;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Model;
@@ -11,7 +12,7 @@ public class AuditLogClient : IAuditLogClient
     private readonly ILogger<AuditLogClient> _logger;
 
     public AuditLogClient(
-        IQueueClient queueClient,
+        [FromKeyedServices("AuditWriter")] IQueueClient queueClient,
         IOptions<AuditClientConfig> config,
         ILogger<AuditLogClient> logger)
     {
