@@ -34,6 +34,9 @@ public class ReferenceDataInsertHandler : IReferenceDataInsertHandler
     private readonly IServiceProvider _serviceProvider;
     private readonly IBlobStorageHelper _blobStorageHelper;
     private readonly ILogger<ReferenceDataInsertHandler> _logger;
+    private readonly string _storageConnectionString;
+    private readonly string _seedDataContainerName;
+    private static readonly ConcurrentDictionary<Type, Func<object, object, Task<bool>>> _insertDelegates = new();
 
     public ReferenceDataInsertHandler(
         IServiceProvider serviceProvider,
@@ -43,6 +46,9 @@ public class ReferenceDataInsertHandler : IReferenceDataInsertHandler
         _serviceProvider = serviceProvider;
         _blobStorageHelper = blobStorageHelper;
         _logger = logger;
+        _storageConnectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage")
+            ?? throw new InvalidOperationException("AzureWebJobsStorage environment variable is not set.");
+        _seedDataContainerName = Environment.GetEnvironmentVariable("SeedDataBlobContainer") ?? "seed-data";
     }
 
     public async Task<bool> ProcessRecord(string dataType, JsonElement data)
@@ -73,21 +79,36 @@ public class ReferenceDataInsertHandler : IReferenceDataInsertHandler
             var accessorType = typeof(IDataServiceAccessor<>).MakeGenericType(entityType);
             var accessor = _serviceProvider.GetRequiredService(accessorType);
 
-            var insertMethod = accessorType.GetMethod("InsertSingle")!;
-            var task = (Task<bool>)insertMethod.Invoke(accessor, new[] { entity })!;
-            var result = await task;
+            var invoker = _insertDelegates.GetOrAdd(entityType, t =>
+            {
+                var aType = typeof(IDataServiceAccessor<>).MakeGenericType(t);
+                var method = aType.GetMethod("InsertSingle")!;
+
+                var accessorParam = System.Linq.Expressions.Expression.Parameter(typeof(object), "a");
+                var entityParam = System.Linq.Expressions.Expression.Parameter(typeof(object), "e");
+
+                var call = System.Linq.Expressions.Expression.Call(
+                    System.Linq.Expressions.Expression.Convert(accessorParam, aType),
+                    method,
+                    System.Linq.Expressions.Expression.Convert(entityParam, t));
+
+                return System.Linq.Expressions.Expression.Lambda<Func<object, object, Task<bool>>>(
+                    call, accessorParam, entityParam).Compile();
+            });
+
+            var result = await invoker(accessor, entity);
 
             if (!result)
             {
-                _logger.LogWarning("InsertSingle returned false for type {DataType}. Record may be a duplicate.", dataType);
+                _logger.LogWarning("InsertSingle returned false for type {DataType}. Record may not have been inserted, possibly because it already exists.", dataType);
             }
 
-            return true;
+            return result;
         }
         catch (DbUpdateException ex) when (IsPrimaryKeyViolation(ex))
         {
             _logger.LogWarning("Duplicate record detected for type {DataType}. Skipping insert.", dataType);
-            return true;
+            return false;
         }
         catch (Exception ex)
         {
@@ -98,14 +119,11 @@ public class ReferenceDataInsertHandler : IReferenceDataInsertHandler
 
     private async Task AppendToBlob(string dataType, string blobFileName, JsonElement newRecord)
     {
-        var connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-        var containerName = Environment.GetEnvironmentVariable("SeedDataBlobContainer") ?? "seed-data";
-
         try
         {
             var existingRecords = new List<JsonElement>();
 
-            var existingBlob = await _blobStorageHelper.GetFileFromBlobStorage(connectionString!, containerName, blobFileName);
+            var existingBlob = await _blobStorageHelper.GetFileFromBlobStorage(_storageConnectionString, _seedDataContainerName, blobFileName);
             if (existingBlob?.Data != null)
             {
                 existingBlob.Data.Position = 0;
@@ -120,7 +138,7 @@ public class ReferenceDataInsertHandler : IReferenceDataInsertHandler
             var bytes = Encoding.UTF8.GetBytes(updatedJson);
             var blobFile = new BlobFile(bytes, blobFileName);
 
-            await _blobStorageHelper.UploadFileToBlobStorage(connectionString!, containerName, blobFile, overwrite: true);
+            await _blobStorageHelper.UploadFileToBlobStorage(_storageConnectionString, _seedDataContainerName, blobFile, overwrite: true);
 
             _logger.LogInformation(
                 "Appended record to blob {BlobFileName} for type {DataType}. Total records: {Count}",
@@ -136,8 +154,22 @@ public class ReferenceDataInsertHandler : IReferenceDataInsertHandler
 
     private static bool IsPrimaryKeyViolation(DbUpdateException ex)
     {
-        return ex.InnerException?.Message?.Contains("duplicate key", StringComparison.OrdinalIgnoreCase) == true
-            || ex.InnerException?.Message?.Contains("violation of primary key", StringComparison.OrdinalIgnoreCase) == true
-            || ex.InnerException?.Message?.Contains("unique constraint", StringComparison.OrdinalIgnoreCase) == true;
+        const int SqlServerPrimaryKeyViolation = 2627;
+        const int SqlServerUniqueConstraintViolation = 2601;
+
+        for (Exception? current = ex.InnerException; current is not null; current = current.InnerException)
+        {
+            var numberProperty = current.GetType().GetProperty("Number");
+            if (numberProperty?.PropertyType == typeof(int))
+            {
+                var errorNumber = (int)numberProperty.GetValue(current)!;
+                if (errorNumber == SqlServerPrimaryKeyViolation || errorNumber == SqlServerUniqueConstraintViolation)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

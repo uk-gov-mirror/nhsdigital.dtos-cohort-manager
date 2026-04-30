@@ -17,9 +17,14 @@ public class ReferenceDataInsertHandlerTests
     private readonly Mock<IBlobStorageHelper> _blobStorageHelperMock = new();
     private readonly Mock<ILogger<ReferenceDataInsertHandler>> _loggerMock = new();
     private readonly ReferenceDataInsertHandler _handler;
+    private readonly string? _originalAzureWebJobsStorage;
+    private readonly string? _originalSeedDataBlobContainer;
 
     public ReferenceDataInsertHandlerTests()
     {
+        _originalAzureWebJobsStorage = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
+        _originalSeedDataBlobContainer = Environment.GetEnvironmentVariable("SeedDataBlobContainer");
+
         Environment.SetEnvironmentVariable("AzureWebJobsStorage", "UseDevelopmentStorage=true");
         Environment.SetEnvironmentVariable("SeedDataBlobContainer", "seed-data");
 
@@ -27,6 +32,13 @@ public class ReferenceDataInsertHandlerTests
             _serviceProviderMock.Object,
             _blobStorageHelperMock.Object,
             _loggerMock.Object);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        Environment.SetEnvironmentVariable("AzureWebJobsStorage", _originalAzureWebJobsStorage);
+        Environment.SetEnvironmentVariable("SeedDataBlobContainer", _originalSeedDataBlobContainer);
     }
 
     private Mock<IDataServiceAccessor<T>> SetupAccessor<T>(bool insertResult = true) where T : class
