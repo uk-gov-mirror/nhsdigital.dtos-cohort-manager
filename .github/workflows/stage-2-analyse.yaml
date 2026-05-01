@@ -55,6 +55,7 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+          token: ${{ secrets.MESH_CLIENT_READ_PAT }}
       - name: Perform static analysis
         uses: ./.github/actions/perform-static-analysis
         with:

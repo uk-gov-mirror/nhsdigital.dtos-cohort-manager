@@ -43,6 +43,7 @@ jobs:
         with:
           fetch-depth: 0 # Full history is needed to scan all commits
           submodules: 'true'
+          token: ${{ secrets.MESH_CLIENT_READ_PAT }}
       - name: "Set up git environment"
         run: |
           git remote set-head origin --auto
