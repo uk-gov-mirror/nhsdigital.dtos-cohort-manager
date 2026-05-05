@@ -13,7 +13,7 @@ var host = new HostBuilder()
     .AddServiceBusClient(auditConfig.ServiceBusConnectionString)
     .ConfigureServices(services =>
     {
-        services.AddDatabaseHealthCheck("AuditWriter");
+        services.AddBasicHealthCheck("AuditWriter");
     })
     .AddTelemetry()
     .Build();
